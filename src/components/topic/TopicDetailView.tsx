@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -12,12 +13,37 @@ import {
   ScrollText,
   Users,
 } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthProvider';
+import CollectionPicker from '@/components/experience/CollectionPicker';
+import AskEraPanel from '@/components/experience/AskEraPanel';
+import ConfidenceBadge from '@/components/experience/ConfidenceBadge';
+import DebateBlock from '@/components/experience/DebateBlock';
+import PerspectiveTabs from '@/components/experience/PerspectiveTabs';
+import RecommendationRail from '@/components/experience/RecommendationRail';
+import TimelineEngine from '@/components/experience/TimelineEngine';
+import TopicNotebookPanel from '@/components/experience/TopicNotebookPanel';
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { cleanText } from '@/lib/utils';
 import { localizePath } from '@/i18n/navigation';
+import {
+  addEntityToCollectionForCurrentUser,
+  getCollectionsForCurrentUserClient,
+  recordUserActivityForCurrentUser,
+  updateResumeStateForCurrentUser,
+} from '@/lib/experience/browser';
+import {
+  buildDebateBlock,
+  buildPerspectivePanels,
+  buildRecommendations,
+  buildTimelineEvents,
+  deriveConfidence,
+} from '@/lib/experience/intelligence';
+import { saveResearchForCurrentUser } from '@/lib/researches/browser';
 import { HistoryTopic } from '@/types';
+import { CollectionSummary } from '@/types/experience';
 
 function getInitials(name: string) {
   return name
@@ -36,6 +62,60 @@ interface TopicDetailViewProps {
 export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
   const router = useRouter();
   const { dictionary, locale } = useI18n();
+  const { isAuthenticated } = useAuth();
+  const copy = getExperienceCopy(locale);
+  const [readingMode, setReadingMode] = useState(false);
+  const [collections, setCollections] = useState<CollectionSummary[]>([]);
+  const [collectionFeedback, setCollectionFeedback] = useState<string | null>(null);
+
+  const savedResearchId =
+    topic && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(topic.id)
+      ? topic.id
+      : null;
+  const confidence = useMemo(() => (topic ? deriveConfidence(topic) : null), [topic]);
+  const perspectives = useMemo(
+    () => (topic ? buildPerspectivePanels(topic) : []),
+    [topic]
+  );
+  const debate = useMemo(() => (topic ? buildDebateBlock(topic) : null), [topic]);
+  const recommendations = useMemo(
+    () => (topic ? buildRecommendations(topic) : []),
+    [topic]
+  );
+  const timelineEvents = useMemo(
+    () => (topic ? buildTimelineEvents(topic) : []),
+    [topic]
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated || !topic) {
+      return;
+    }
+
+    const currentTopic = topic;
+
+    async function hydrateExperienceState() {
+      const collectionsResult = await getCollectionsForCurrentUserClient();
+      if (!collectionsResult.error) {
+        setCollections(collectionsResult.collections);
+      }
+
+      await Promise.all([
+        recordUserActivityForCurrentUser({
+          eventType: 'topic_opened',
+          referenceType: 'topic',
+          referenceId: currentTopic.slug,
+        }),
+        updateResumeStateForCurrentUser({
+          lastResearchId: savedResearchId,
+          lastTopicSlug: currentTopic.slug,
+          lastTopicTitle: currentTopic.title,
+        }),
+      ]);
+    }
+
+    void hydrateExperienceState();
+  }, [isAuthenticated, savedResearchId, topic]);
 
   if (!topic) {
     return (
@@ -67,6 +147,44 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
         <Footer />
       </>
     );
+  }
+
+  async function handleAddTopicToCollection(collectionId: string) {
+    const currentTopic = topic;
+    if (!currentTopic) {
+      return;
+    }
+
+    const persistedId =
+      savedResearchId ??
+      (await saveResearchForCurrentUser(currentTopic, locale)).topic?.id ??
+      null;
+
+    if (!persistedId) {
+      setCollectionFeedback('This dossier could not be attached to a shelf right now.');
+      return;
+    }
+
+    const result = await addEntityToCollectionForCurrentUser({
+      collectionId,
+      entityType: 'research',
+      entityId: persistedId,
+      title: currentTopic.title,
+      slug: currentTopic.slug,
+      coverTheme: currentTopic.coverTheme,
+      summary: currentTopic.summary,
+      metadata: {
+        era: currentTopic.era,
+        region: currentTopic.region,
+      },
+    });
+
+    if (result.error) {
+      setCollectionFeedback('This dossier could not be attached to a shelf right now.');
+      return;
+    }
+
+    setCollectionFeedback('Dossier added to shelf.');
   }
 
   return (
@@ -116,6 +234,16 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
               <p className="mt-5 max-w-3xl text-sm leading-relaxed text-stone-300 md:text-lg">
                 {cleanText(topic.summary)}
               </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setReadingMode((current) => !current)}
+                  className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-stone-200 transition hover:border-primary/25"
+                >
+                  {readingMode ? copy.topic.standardMode : copy.topic.readingMode}
+                </button>
+                {confidence && <ConfidenceBadge confidence={confidence} />}
+              </div>
             </div>
 
             <div className="vault-frame rounded-[2rem] p-6 md:p-7">
@@ -153,17 +281,36 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
                   </div>
                 </div>
               </div>
+
+              {isAuthenticated && (
+                <div className="mt-6 border-t border-white/10 pt-5">
+                  <CollectionPicker
+                    collections={collections}
+                    onAdd={handleAddTopicToCollection}
+                    buttonLabel={copy.topic.addToCollection}
+                  />
+                  {collectionFeedback && (
+                    <p className="mt-3 text-sm text-stone-400">{collectionFeedback}</p>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         </section>
 
-        <section className="mx-auto mt-8 grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1.18fr)_360px]">
+        <section
+          className={`mx-auto mt-8 grid max-w-7xl gap-6 ${
+            readingMode ? 'xl:grid-cols-1' : 'xl:grid-cols-[minmax(0,1.18fr)_360px]'
+          }`}
+        >
           <motion.article
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.55 }}
-            className="vault-frame rounded-[2rem] p-6 md:p-8 lg:p-10"
+            className={`vault-frame rounded-[2rem] p-6 md:p-8 lg:p-10 ${
+              readingMode ? 'mx-auto max-w-4xl' : ''
+            }`}
           >
             <div className="mb-8">
               <p className="text-[11px] uppercase tracking-[0.34em] text-secondary/80">
@@ -197,7 +344,7 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
             )}
           </motion.article>
 
-          <aside className="space-y-6">
+          {!readingMode && <aside className="space-y-6">
             <div className="soft-panel rounded-[2rem] p-6 md:p-7">
               <p className="text-[11px] uppercase tracking-[0.34em] text-primary/80">
                 {dictionary.topicPage.researchActions}
@@ -251,7 +398,7 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
                 </div>
               </div>
             )}
-          </aside>
+          </aside>}
         </section>
 
         {topic.keyFigures.length > 0 && (
@@ -310,45 +457,44 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
           </section>
         )}
 
-        {topic.timelineEvents.length > 0 && (
+        {timelineEvents.length > 0 && (
           <section className="mx-auto mt-8 max-w-7xl">
-            <div className="mb-6">
-              <p className="text-[11px] uppercase tracking-[0.34em] text-secondary/80">
-                {dictionary.topicPage.timelineEyebrow}
-              </p>
-              <h2 className="mt-3 font-[family-name:var(--font-headline)] text-3xl text-on-surface md:text-4xl">
-                {dictionary.topicPage.timelineTitle}
-              </h2>
-            </div>
-
-            <div className="grid gap-4">
-              {topic.timelineEvents.map((event, index) => (
-                <motion.div
-                  key={`${event.year}-${event.title}-${index}`}
-                  initial={{ opacity: 0, y: 18 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.45, delay: index * 0.04 }}
-                  className="soft-panel rounded-[1.8rem] p-5 md:p-6"
-                >
-                  <div className="grid gap-4 md:grid-cols-[140px_minmax(0,1fr)] md:items-start">
-                    <p className="text-[11px] uppercase tracking-[0.32em] text-primary/85">
-                      {cleanText(event.year)}
-                    </p>
-                    <div>
-                      <h3 className="font-[family-name:var(--font-headline)] text-2xl text-on-surface">
-                        {cleanText(event.title)}
-                      </h3>
-                      <p className="mt-3 text-sm leading-relaxed text-stone-400">
-                        {cleanText(event.description)}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <TimelineEngine
+              events={timelineEvents}
+              title={dictionary.topicPage.timelineTitle}
+              description="Use the shared engine to trace this dossier through turning points, clusters, and filtered historical themes."
+            />
           </section>
         )}
+
+        <section className="mx-auto mt-8 max-w-7xl">
+          <PerspectiveTabs panels={perspectives} />
+        </section>
+
+        {debate && (
+          <section className="mx-auto mt-8 max-w-7xl">
+            <DebateBlock debate={debate} />
+          </section>
+        )}
+
+        <section className="mx-auto mt-8 max-w-7xl">
+          <AskEraPanel topic={topic} />
+        </section>
+
+        <section className="mx-auto mt-8 max-w-7xl">
+          <TopicNotebookPanel
+            topicSlug={topic.slug}
+            topicTitle={topic.title}
+            savedResearchId={savedResearchId}
+            sections={[
+              { key: 'overview', label: dictionary.topicPage.overview },
+              { key: 'timeline', label: dictionary.topicPage.timelineTitle },
+              { key: 'perspectives', label: copy.topic.perspectives },
+              { key: 'debate', label: copy.topic.debate },
+              { key: 'legacy', label: 'Legacy' },
+            ]}
+          />
+        </section>
 
         {(topic.relatedTopics.length > 0 || topic.relatedEvents.length > 0) && (
           <section className="mx-auto mt-8 max-w-7xl">
@@ -386,6 +532,10 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
             </div>
           </section>
         )}
+
+        <section className="mx-auto mt-8 max-w-7xl">
+          <RecommendationRail items={recommendations} />
+        </section>
 
         <section className="mx-auto mt-8 max-w-7xl">
           <div className="luminous-panel rounded-[2.2rem] px-7 py-10 text-center md:px-10 md:py-12">

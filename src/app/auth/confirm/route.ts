@@ -5,7 +5,12 @@ import { localizePath } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { hasSupabaseEnv } from '@/lib/supabase/env';
 
-function getSafeLocale(request: NextRequest) {
+function getSafeLocale(request: NextRequest, nextPath: string | null) {
+  const pathnameLocale = nextPath?.split('/').filter(Boolean)[0];
+  if (pathnameLocale && isLocale(pathnameLocale)) {
+    return pathnameLocale;
+  }
+
   const cookieLocale = request.cookies.get('locale')?.value;
   return cookieLocale && isLocale(cookieLocale) ? cookieLocale : defaultLocale;
 }
@@ -19,8 +24,9 @@ function getSafeNext(next: string | null, fallbackLocale: ReturnType<typeof getS
 }
 
 export async function GET(request: NextRequest) {
-  const locale = getSafeLocale(request);
-  const next = getSafeNext(request.nextUrl.searchParams.get('next'), locale);
+  const requestedNext = request.nextUrl.searchParams.get('next');
+  const locale = getSafeLocale(request, requestedNext);
+  const next = getSafeNext(requestedNext, locale);
   const loginUrl = new URL(localizePath(locale, '/login'), request.url);
   loginUrl.searchParams.set('next', next);
 
@@ -32,13 +38,14 @@ export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
   const tokenHash = request.nextUrl.searchParams.get('token_hash');
   const type = request.nextUrl.searchParams.get('type') as EmailOtpType | null;
-  const redirectTo = new URL(next, request.url);
   const supabase = await createClient();
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(redirectTo);
+      await supabase.auth.signOut();
+      loginUrl.searchParams.set('verified', 'success');
+      return NextResponse.redirect(loginUrl);
     }
   }
 
@@ -49,13 +56,12 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
-      return NextResponse.redirect(redirectTo);
+      await supabase.auth.signOut();
+      loginUrl.searchParams.set('verified', 'success');
+      return NextResponse.redirect(loginUrl);
     }
   }
 
-  loginUrl.searchParams.set(
-    'error',
-    'We could not confirm your account. Please try signing in again.'
-  );
+  loginUrl.searchParams.set('verified', 'error');
   return NextResponse.redirect(loginUrl);
 }

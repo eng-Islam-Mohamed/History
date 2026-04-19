@@ -15,11 +15,12 @@ import {
   Users,
 } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import SearchAccessModal from '@/components/auth/SearchAccessModal';
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
-import { searchHistoryTopic } from '@/lib/ai/historyService';
-import { getTopicBySlug } from '@/lib/ai/historyService';
+import SearchArchiveLoader from '@/components/search/SearchArchiveLoader';
+import { SearchAccessError, getTopicBySlug, searchHistoryTopic } from '@/lib/ai/historyService';
 import { saveResearchForCurrentUser } from '@/lib/researches/browser';
 import { cleanText } from '@/lib/utils';
 import { localizePath } from '@/i18n/navigation';
@@ -30,7 +31,7 @@ function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { dictionary, locale } = useI18n();
-  const { hasSupabase, isAuthenticated } = useAuth();
+  const { hasSupabase, isAuthenticated, user } = useAuth();
   const ui = getUiCopy(locale);
   const query = searchParams.get('q') || '';
 
@@ -38,11 +39,44 @@ function SearchContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<HistoryTopic | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchGateMode, setSearchGateMode] = useState<'guest' | 'unverified' | null>(null);
+  const [searchGateNext, setSearchGateNext] = useState(localizePath(locale, '/search'));
   const [saveState, setSaveState] = useState<
     'idle' | 'saving' | 'saved' | 'error' | 'signin'
   >('idle');
 
+  const buildSearchPath = (value: string) =>
+    value.trim()
+      ? `${localizePath(locale, '/search')}?q=${encodeURIComponent(value.trim())}`
+      : localizePath(locale, '/search');
+
+  function getSearchGateState() {
+    if (!hasSupabase) {
+      return null;
+    }
+
+    if (!isAuthenticated || !user) {
+      return 'guest' as const;
+    }
+
+    if (!user.emailVerified) {
+      return 'unverified' as const;
+    }
+
+    return null;
+  }
+
   async function performSearch(nextQuery: string) {
+    const gateState = getSearchGateState();
+    if (gateState) {
+      setSearchGateNext(buildSearchPath(nextQuery));
+      setSearchGateMode(gateState);
+      setResult(null);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setResult(null);
@@ -71,6 +105,12 @@ function SearchContent() {
         }
       }
     } catch (err) {
+      if (err instanceof SearchAccessError) {
+        setSearchGateMode(err.code === 'email_not_verified' ? 'unverified' : 'guest');
+        setError(null);
+        return;
+      }
+
       setError(dictionary.searchPage.error);
       console.warn('Search request failed:', err);
     } finally {
@@ -93,25 +133,41 @@ function SearchContent() {
 
   useEffect(() => {
     handleQueryChange(query);
-  }, [query]);
+  }, [query, hasSupabase, isAuthenticated, user?.emailVerified]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const nextQuery = searchInput.trim();
     if (!nextQuery) return;
 
-    router.push(
-      `${localizePath(locale, '/search')}?q=${encodeURIComponent(nextQuery)}`
-    );
+    const gateState = getSearchGateState();
+    if (gateState) {
+      setSearchGateNext(buildSearchPath(nextQuery));
+      setSearchGateMode(gateState);
+      return;
+    }
+
+    router.push(buildSearchPath(nextQuery));
   };
 
   const openPrompt = (prompt: string) => {
     setSearchInput(prompt);
-    router.push(`${localizePath(locale, '/search')}?q=${encodeURIComponent(prompt)}`);
+
+    const gateState = getSearchGateState();
+    if (gateState) {
+      setSearchGateNext(buildSearchPath(prompt));
+      setSearchGateMode(gateState);
+      return;
+    }
+
+    router.push(buildSearchPath(prompt));
   };
 
   const isMockTopic = result ? Boolean(getTopicBySlug(result.slug)) : false;
   const canOpenFullDossier = Boolean(result && (isMockTopic || saveState === 'saved'));
+  const resultDetailHref = result
+    ? `${localizePath(locale, `/topic/${result.slug}`)}${isMockTopic ? '' : `?saved=${encodeURIComponent(result.id)}`}`
+    : null;
   const loginHref = `${localizePath(locale, '/login')}?next=${encodeURIComponent(
     `${localizePath(locale, '/search')}?q=${encodeURIComponent(result?.query || query)}`
   )}`;
@@ -177,9 +233,16 @@ function SearchContent() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="rounded-[1rem] bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-60"
+                    className="inline-flex min-w-[156px] items-center justify-center rounded-[1rem] bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-60"
                   >
-                    {isLoading ? dictionary.searchPage.loading : dictionary.common.search}
+                    {isLoading ? (
+                      <SearchArchiveLoader
+                        label={dictionary.searchPage.loading}
+                        variant="inline"
+                      />
+                    ) : (
+                      dictionary.common.search
+                    )}
                   </button>
                 </div>
               </form>
@@ -219,25 +282,22 @@ function SearchContent() {
             {isLoading && (
               <motion.div
                 key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="mt-10 space-y-6"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="mt-10"
               >
-                <div className="vault-frame rounded-[2rem] p-8 md:p-10">
-                  <div className="skeleton h-10 w-2/3" />
-                  <div className="skeleton mt-4 h-4 w-1/4" />
-                  <div className="mt-8 space-y-4">
-                    <div className="skeleton h-4 w-full" />
-                    <div className="skeleton h-4 w-11/12" />
-                    <div className="skeleton h-4 w-4/5" />
-                  </div>
-                </div>
+                <div className="vault-frame rounded-[2rem] px-8 py-12 md:px-10 md:py-14">
+                  <SearchArchiveLoader
+                    label={dictionary.searchPage.loading}
+                    detail={query || searchInput}
+                  />
 
-                <div className="grid gap-6 md:grid-cols-3">
-                  <div className="skeleton h-44" />
-                  <div className="skeleton h-44" />
-                  <div className="skeleton h-44" />
+                  <div className="mt-10 grid gap-4 md:grid-cols-3">
+                    <div className="skeleton h-28 rounded-[1.4rem]" />
+                    <div className="skeleton h-28 rounded-[1.4rem]" />
+                    <div className="skeleton h-28 rounded-[1.4rem]" />
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -489,9 +549,7 @@ function SearchContent() {
 
                     {canOpenFullDossier ? (
                       <button
-                        onClick={() =>
-                          router.push(localizePath(locale, `/topic/${result.slug}`))
-                        }
+                        onClick={() => resultDetailHref && router.push(resultDetailHref)}
                         className="flex w-full items-center justify-center gap-2 rounded-[1.25rem] bg-primary px-6 py-4 text-sm font-semibold text-on-primary transition hover:brightness-110"
                       >
                         {dictionary.searchPage.openFullDossier}
@@ -546,6 +604,12 @@ function SearchContent() {
       </main>
 
       <Footer />
+
+      <SearchAccessModal
+        mode={searchGateMode}
+        next={searchGateNext}
+        onClose={() => setSearchGateMode(null)}
+      />
     </>
   );
 }
@@ -557,9 +621,7 @@ export default function LocalizedSearchPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <p className="text-sm text-stone-400">
-            {dictionary.searchPage.loadingMessage}
-          </p>
+          <SearchArchiveLoader label={dictionary.searchPage.loadingMessage} />
         </div>
       }
     >

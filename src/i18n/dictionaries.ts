@@ -1,4 +1,4 @@
-import { defaultLocale, Locale } from '@/i18n/config';
+﻿import { defaultLocale, Locale } from '@/i18n/config';
 
 const dictionaries = {
   en: {
@@ -212,6 +212,8 @@ const dictionaries = {
       openingArchive: 'Opening your archive...',
       latestAddition: 'Latest addition',
       openLatestDossier: 'Open latest dossier',
+      deleteDossier: 'Delete dossier',
+      deleteError: 'This dossier could not be deleted right now.',
     },
     topicPage: {
       notFoundTitle: 'Dossier not found',
@@ -455,6 +457,8 @@ const dictionaries = {
       openingArchive: "Ouverture de votre archive...",
       latestAddition: 'Dernier ajout',
       openLatestDossier: 'Ouvrir le dernier dossier',
+      deleteDossier: 'Supprimer le dossier',
+      deleteError: 'Ce dossier ne peut pas être supprimé pour le moment.',
     },
     topicPage: {
       notFoundTitle: 'Dossier introuvable',
@@ -692,6 +696,8 @@ const dictionaries = {
       openingArchive: 'جارٍ فتح أرشيفك...',
       latestAddition: 'أحدث إضافة',
       openLatestDossier: 'افتح أحدث ملف',
+      deleteDossier: 'حذف الملف',
+      deleteError: 'تعذر حذف هذا الملف حاليًا.',
     },
     topicPage: {
       notFoundTitle: 'الملف غير موجود',

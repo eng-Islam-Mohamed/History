@@ -8,6 +8,15 @@ import {
 import { mockTopics } from '@/data/mockTopics';
 import { Locale } from '@/i18n/config';
 
+export class SearchAccessError extends Error {
+  code: 'auth_required' | 'email_not_verified';
+
+  constructor(code: 'auth_required' | 'email_not_verified', message: string) {
+    super(message);
+    this.code = code;
+  }
+}
+
 // AI Service abstraction layer
 // Uses DeepSeek API for generating historical content
 
@@ -163,7 +172,16 @@ export async function searchHistoryTopic(
     });
 
     if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
+      const payload = await response.json().catch(() => null);
+      if (response.status === 401 && payload?.code === 'auth_required') {
+        throw new SearchAccessError('auth_required', payload.error);
+      }
+
+      if (response.status === 403 && payload?.code === 'email_not_verified') {
+        throw new SearchAccessError('email_not_verified', payload.error);
+      }
+
+      throw new Error(payload?.error ?? `API returned ${response.status}`);
     }
 
     const data = await response.json();
@@ -172,6 +190,10 @@ export async function searchHistoryTopic(
     }
     throw new Error('No topic in response');
   } catch (error) {
+    if (error instanceof SearchAccessError) {
+      throw error;
+    }
+
     console.warn('AI API error, falling back to mock topic:', error);
     // Generate a basic mock response for unknown queries
     return generateFallbackTopic(query, locale);

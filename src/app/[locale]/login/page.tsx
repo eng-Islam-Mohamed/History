@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getDictionary } from '@/i18n/dictionaries';
 import { getUiCopy } from '@/i18n/ui-copy';
@@ -6,6 +6,7 @@ import { localizePath } from '@/i18n/navigation';
 import { Locale, isLocale } from '@/i18n/config';
 import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
+import EmailVerificationPanel from '@/components/auth/EmailVerificationPanel';
 import { getCurrentAuthState } from '@/lib/researches/server';
 import { signIn, signUp } from './actions';
 
@@ -41,9 +42,11 @@ export default async function LoginPage({
   );
   const error = typeof query.error === 'string' ? query.error : null;
   const success = typeof query.success === 'string' ? query.success : null;
+  const verified = typeof query.verified === 'string' ? query.verified : null;
   const { user } = await getCurrentAuthState();
+  const isLoggedInButUnverified = Boolean(user && !user.emailVerified);
 
-  if (user) {
+  if (user?.emailVerified) {
     redirect(next);
   }
 
@@ -130,52 +133,112 @@ export default async function LoginPage({
               </div>
             )}
 
-            <form className="mt-6 space-y-4">
-              <input type="hidden" name="locale" value={locale} />
-              <input type="hidden" name="next" value={next} />
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-[11px] uppercase tracking-[0.28em] text-stone-500"
-                >
-                  {ui.auth.email}
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="w-full rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface placeholder:text-stone-500 focus:border-primary/40 focus:outline-none"
-                  placeholder="you@example.com"
-                />
+            {verified === 'success' && (
+              <div className="mt-5 rounded-[1.4rem] border border-primary/30 bg-primary/10 px-4 py-4 text-sm text-stone-100">
+                {ui.auth.emailVerifiedSuccess}
               </div>
+            )}
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="mb-2 block text-[11px] uppercase tracking-[0.28em] text-stone-500"
-                >
-                  {ui.auth.password}
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  className="w-full rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface placeholder:text-stone-500 focus:border-primary/40 focus:outline-none"
-                  placeholder="••••••••"
-                />
+            {verified === 'error' && (
+              <div className="mt-5 rounded-[1.4rem] border border-error/40 bg-error/10 px-4 py-4 text-sm text-red-200">
+                {ui.auth.emailVerificationFailed}
               </div>
+            )}
 
-              <button
-                formAction={mode === 'signup' ? signUp : signIn}
-                className="w-full rounded-[1.1rem] bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110"
-              >
-                {mode === 'signup' ? ui.auth.submitSignUp : ui.auth.submitSignIn}
-              </button>
-            </form>
+            {isLoggedInButUnverified ? (
+              <div className="mt-6">
+                <EmailVerificationPanel next={next} />
+              </div>
+            ) : (
+              <form className="mt-6 space-y-4">
+                <input type="hidden" name="locale" value={locale} />
+                <input type="hidden" name="next" value={next} />
+
+                {mode === 'signup' && (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label
+                        htmlFor="firstName"
+                        className="mb-2 block text-[11px] uppercase tracking-[0.28em] text-stone-500"
+                      >
+                        {ui.auth.firstName}
+                      </label>
+                      <input
+                        id="firstName"
+                        name="firstName"
+                        type="text"
+                        required
+                        className="w-full rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface placeholder:text-stone-500 focus:border-primary/40 focus:outline-none"
+                        placeholder={ui.auth.firstNamePlaceholder}
+                        autoComplete="given-name"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="lastName"
+                        className="mb-2 block text-[11px] uppercase tracking-[0.28em] text-stone-500"
+                      >
+                        {ui.auth.lastName}
+                      </label>
+                      <input
+                        id="lastName"
+                        name="lastName"
+                        type="text"
+                        required
+                        className="w-full rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface placeholder:text-stone-500 focus:border-primary/40 focus:outline-none"
+                        placeholder={ui.auth.lastNamePlaceholder}
+                        autoComplete="family-name"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-[11px] uppercase tracking-[0.28em] text-stone-500"
+                  >
+                    {ui.auth.email}
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="w-full rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface placeholder:text-stone-500 focus:border-primary/40 focus:outline-none"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="mb-2 block text-[11px] uppercase tracking-[0.28em] text-stone-500"
+                  >
+                    {ui.auth.password}
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    minLength={8}
+                    autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                    className="w-full rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface placeholder:text-stone-500 focus:border-primary/40 focus:outline-none"
+                    placeholder="********"
+                  />
+                </div>
+
+                <button
+                  formAction={mode === 'signup' ? signUp : signIn}
+                  className="w-full rounded-[1.1rem] bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110"
+                >
+                  {mode === 'signup' ? ui.auth.submitSignUp : ui.auth.submitSignIn}
+                </button>
+              </form>
+            )}
           </div>
         </section>
       </main>
@@ -184,3 +247,4 @@ export default async function LoginPage({
     </>
   );
 }
+

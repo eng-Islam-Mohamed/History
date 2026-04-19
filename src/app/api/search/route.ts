@@ -1,9 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AI_PROMPT, getLocaleInstruction, parseAIResponse } from '@/lib/ai/historyService';
 import { defaultLocale, isLocale } from '@/i18n/config';
+import { createClient } from '@/lib/supabase/server';
+import { hasSupabaseEnv } from '@/lib/supabase/env';
 
 export async function POST(request: NextRequest) {
   try {
+    if (hasSupabaseEnv()) {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        return NextResponse.json(
+          { error: 'Authentication is required to search.', code: 'auth_required' },
+          { status: 401 }
+        );
+      }
+
+      if (!(user.email_confirmed_at ?? user.confirmed_at)) {
+        return NextResponse.json(
+          { error: 'Please verify your email address to use search.', code: 'email_not_verified' },
+          { status: 403 }
+        );
+      }
+    }
+
     const { query, locale: rawLocale } = await request.json();
     const locale = rawLocale && isLocale(rawLocale) ? rawLocale : defaultLocale;
 

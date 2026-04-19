@@ -11,6 +11,7 @@ import {
   ScrollText,
   Shield,
   Sparkles,
+  Trash2,
   type LucideIcon,
 } from 'lucide-react';
 import { useI18n } from '@/components/i18n/LocaleProvider';
@@ -21,6 +22,8 @@ import { cleanText, formatDate, getCoverStyle } from '@/lib/utils';
 interface BookCardProps {
   book: SavedBook;
   index?: number;
+  isDeleting?: boolean;
+  onDelete?: (id: string) => void;
 }
 
 const coverIcons: Record<SavedBook['coverTheme'], LucideIcon> = {
@@ -53,10 +56,16 @@ const coverPatterns: Record<SavedBook['coverTheme'], string> = {
     'radial-gradient(circle at 22% 18%, rgba(196,160,232,0.16) 0%, transparent 26%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 24%)',
 };
 
-export default function BookCard({ book, index = 0 }: BookCardProps) {
+export default function BookCard({
+  book,
+  index = 0,
+  isDeleting = false,
+  onDelete,
+}: BookCardProps) {
   const { dictionary, locale } = useI18n();
   const style = getCoverStyle(book.coverTheme);
   const Icon = coverIcons[book.coverTheme] || Sparkles;
+  const detailHref = `${localizePath(locale, `/topic/${book.slug}`)}?saved=${encodeURIComponent(book.id)}`;
 
   return (
     <motion.div
@@ -68,8 +77,20 @@ export default function BookCard({ book, index = 0 }: BookCardProps) {
         ease: [0.22, 1, 0.36, 1],
       }}
     >
-      <Link href={localizePath(locale, `/topic/${book.slug}`)} className="group block">
-        <article className="soft-panel overflow-hidden rounded-[2rem]">
+      <article className="soft-panel relative overflow-hidden rounded-[2rem]">
+        {onDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(book.id)}
+            disabled={isDeleting}
+            className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/35 text-stone-300 transition hover:border-error/45 hover:text-error disabled:cursor-not-allowed disabled:opacity-55"
+            aria-label={dictionary.libraryPage.deleteDossier}
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
+
+        <Link href={detailHref} className="group block">
           <div className="book-container px-6 pt-6 md:px-7 md:pt-7">
             <div className="book-3d book-shadow relative aspect-[4/5] overflow-hidden rounded-[1.6rem]">
               <div
@@ -139,8 +160,8 @@ export default function BookCard({ book, index = 0 }: BookCardProps) {
               </span>
             </div>
           </div>
-        </article>
-      </Link>
+        </Link>
+      </article>
     </motion.div>
   );
 }

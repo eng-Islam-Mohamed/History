@@ -42,15 +42,10 @@ export async function saveResearchForCurrentUser(
 
   const { data, error } = await supabase
     .from('saved_researches')
-    .upsert(
-      {
-        user_id: user.id,
-        ...createSavedResearchPayload(topic, locale),
-      },
-      {
-        onConflict: 'user_id,slug',
-      }
-    )
+    .insert({
+      user_id: user.id,
+      ...createSavedResearchPayload(topic, locale),
+    })
     .select('*')
     .single<SavedResearchRow>();
 
@@ -58,6 +53,40 @@ export async function saveResearchForCurrentUser(
     topic: data ? savedResearchToTopic(data) : null,
     error,
   };
+}
+
+export async function deleteSavedResearchForCurrentUser(id: string) {
+  if (!hasSupabaseEnv()) {
+    return {
+      error: new Error('Supabase is not configured'),
+    };
+  }
+
+  const supabase = createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    return {
+      error: authError,
+    };
+  }
+
+  if (!user) {
+    return {
+      error: new Error('Authentication required'),
+    };
+  }
+
+  const { error } = await supabase
+    .from('saved_researches')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  return { error };
 }
 
 export async function getSavedResearchBySlugClient(slug: string) {

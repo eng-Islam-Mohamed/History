@@ -24,6 +24,32 @@ import { localizePath } from '@/i18n/navigation';
 
 const categoryIcons = [UserRound, Swords, ScrollText, Landmark];
 const featureIcons = [BookMarked, Sparkles, Clock3];
+const premiumExperienceCards = [
+  {
+    title: 'Compare Mode',
+    description: 'Place two historical dossiers side by side and read the differences with structure.',
+    href: '/compare',
+    icon: Sparkles,
+  },
+  {
+    title: 'Interactive Timeline',
+    description: 'Shift between clustered turning points and historical density without losing chronology.',
+    href: '/timeline',
+    icon: Clock3,
+  },
+  {
+    title: 'Living World Map',
+    description: 'Use a stylized atlas layer to view imperial zones, routes, and historical overlays.',
+    href: '/map',
+    icon: Landmark,
+  },
+  {
+    title: 'Deep Dive Paths',
+    description: 'Follow collectible guided journeys that now track completion in your profile.',
+    href: '/paths',
+    icon: BookMarked,
+  },
+];
 
 export default function LocalizedLandingPage() {
   const router = useRouter();
@@ -250,6 +276,54 @@ export default function LocalizedLandingPage() {
                 );
               })}
             </div>
+          </div>
+        </section>
+
+        <section className="mx-auto mt-20 max-w-7xl md:mt-24">
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.34em] text-secondary/80">
+                Premium experiences
+              </p>
+              <h2 className="mt-3 font-[family-name:var(--font-headline)] text-4xl text-on-surface md:text-5xl">
+                Explore the upgraded archive
+              </h2>
+            </div>
+            <p className="max-w-2xl text-sm leading-relaxed text-stone-400 md:text-base">
+              The platform now extends beyond search into compare workflows, timeline study, map exploration, shelves, and guided research paths.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {premiumExperienceCards.map((card, index) => {
+              const Icon = card.icon;
+              return (
+                <motion.button
+                  key={card.title}
+                  type="button"
+                  onClick={() => router.push(localizePath(locale, card.href))}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.06 }}
+                  className="group soft-panel rounded-[1.8rem] p-6 text-left"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                    <Icon size={18} />
+                  </div>
+                  <h3 className="mt-5 font-[family-name:var(--font-headline)] text-2xl text-on-surface">
+                    {card.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-stone-400">
+                    {card.description}
+                  </p>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm text-primary transition group-hover:translate-x-0.5">
+                    Open experience
+                    <ArrowRight size={15} />
+                  </span>
+                </motion.button>
+              );
+            })}
           </div>
         </section>
 

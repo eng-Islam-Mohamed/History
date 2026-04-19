@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
+import { normalizeProfileRow } from '@/lib/auth/profile';
+import { mapSupabaseUser } from '@/lib/auth/user';
 import { createClient } from '@/lib/supabase/client';
 import { hasSupabaseEnv } from '@/lib/supabase/env';
 import { AuthenticatedUser, UserProfile } from '@/types/auth';
@@ -15,17 +16,6 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function mapUser(user: User | null): AuthenticatedUser | null {
-  if (!user) {
-    return null;
-  }
-
-  return {
-    id: user.id,
-    email: user.email ?? null,
-  };
-}
-
 interface AuthProviderProps {
   children: React.ReactNode;
   initialProfile: UserProfile | null;
@@ -38,8 +28,16 @@ export function AuthProvider({
   initialUser,
 }: AuthProviderProps) {
   const [user, setUser] = useState<AuthenticatedUser | null>(initialUser);
-  const [profile] = useState<UserProfile | null>(initialProfile);
+  const [profile, setProfile] = useState<UserProfile | null>(initialProfile);
   const supabaseEnabled = hasSupabaseEnv();
+
+  useEffect(() => {
+    setUser(initialUser);
+  }, [initialUser]);
+
+  useEffect(() => {
+    setProfile(initialProfile);
+  }, [initialProfile]);
 
   useEffect(() => {
     if (!supabaseEnabled) {
@@ -47,10 +45,34 @@ export function AuthProvider({
     }
 
     const supabase = createClient();
+
+    async function syncProfile(userId: string | null) {
+      if (!userId) {
+        setProfile(null);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, display_name, preferred_locale, bio, avatar_url')
+        .eq('id', userId)
+        .maybeSingle<{
+          first_name: string | null;
+          last_name: string | null;
+          display_name: string | null;
+          preferred_locale: string | null;
+          bio: string | null;
+          avatar_url: string | null;
+        }>();
+
+      setProfile(normalizeProfileRow(data));
+    }
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(mapUser(session?.user ?? null));
+      setUser(mapSupabaseUser(session?.user ?? null));
+      void syncProfile(session?.user?.id ?? null);
     });
 
     return () => {
