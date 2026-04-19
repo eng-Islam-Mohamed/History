@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { type EmailOtpType } from '@supabase/supabase-js';
 import { Locale, defaultLocale, isLocale } from '@/i18n/config';
 import { localizePath } from '@/i18n/navigation';
 import { buildAppUrl } from '@/lib/app-url';
@@ -23,6 +24,61 @@ function getSafeNext(next: FormDataEntryValue | null, locale: Locale) {
 function getFieldValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function getPendingVerificationRedirect({
+  locale,
+  next,
+  email,
+  message,
+}: {
+  locale: Locale;
+  next: string;
+  email: string;
+  message?: string;
+}) {
+  const loginPath = localizePath(locale, '/login');
+  const params = new URLSearchParams({
+    mode: 'signup',
+    success: 'verify-code',
+    next,
+    email,
+  });
+
+  if (message) {
+    params.set('message', message);
+  }
+
+  return `${loginPath}?${params.toString()}`;
+}
+
+async function verifyEmailCodeForTypes({
+  supabase,
+  email,
+  token,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  email: string;
+  token: string;
+}) {
+  const attempts: EmailOtpType[] = ['email', 'signup'];
+  let lastError: string | null = null;
+
+  for (const type of attempts) {
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type,
+    });
+
+    if (!error) {
+      return true;
+    }
+
+    lastError = error.message;
+  }
+
+  return lastError;
 }
 
 export async function signIn(formData: FormData) {
@@ -83,6 +139,17 @@ export async function signUp(formData: FormData) {
   });
 
   if (error) {
+    if (/already registered/i.test(error.message)) {
+      redirect(
+        getPendingVerificationRedirect({
+          locale,
+          next,
+          email,
+          message: 'Account already exists. Enter the verification code from your email or resend a fresh code.',
+        })
+      );
+    }
+
     redirect(
       `${loginPath}?mode=signup&error=${encodeURIComponent(error.message)}&next=${encodeURIComponent(next)}`
     );
@@ -94,7 +161,78 @@ export async function signUp(formData: FormData) {
     redirect(next);
   }
 
+  redirect(getPendingVerificationRedirect({ locale, next, email }));
+}
+
+export async function verifyEmailCode(formData: FormData) {
+  const locale = getSafeLocale(formData.get('locale'));
+  const next = getSafeNext(formData.get('next'), locale);
+  const email = getFieldValue(formData, 'email');
+  const code = getFieldValue(formData, 'code');
+  const loginPath = localizePath(locale, '/login');
+
+  if (!email || !code) {
+    redirect(
+      `${loginPath}?mode=signup&error=${encodeURIComponent('Email and verification code are required.')}&email=${encodeURIComponent(email)}&next=${encodeURIComponent(next)}`
+    );
+  }
+
+  const supabase = await createClient();
+  const result = await verifyEmailCodeForTypes({
+    supabase,
+    email,
+    token: code,
+  });
+
+  if (result !== true) {
+    redirect(
+      `${loginPath}?mode=signup&error=${encodeURIComponent(result ?? 'The verification code is invalid or expired.')}&email=${encodeURIComponent(email)}&next=${encodeURIComponent(next)}`
+    );
+  }
+
+  await supabase.auth.signOut();
+  revalidatePath('/', 'layout');
   redirect(
-    `${loginPath}?mode=signup&success=confirm&next=${encodeURIComponent(next)}`
+    `${loginPath}?mode=signin&verified=success&next=${encodeURIComponent(next)}`
+  );
+}
+
+export async function resendVerificationCode(formData: FormData) {
+  const locale = getSafeLocale(formData.get('locale'));
+  const next = getSafeNext(formData.get('next'), locale);
+  const email = getFieldValue(formData, 'email');
+
+  if (!email) {
+    redirect(
+      `${localizePath(locale, '/login')}?mode=signup&error=${encodeURIComponent('Email is required to resend a verification code.')}&next=${encodeURIComponent(next)}`
+    );
+  }
+
+  const requestHeaders = await headers();
+  const confirmUrl = new URL(buildAppUrl('/auth/confirm', requestHeaders));
+  confirmUrl.searchParams.set('next', next);
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      emailRedirectTo: confirmUrl.toString(),
+    },
+  });
+
+  if (error) {
+    redirect(
+      `${localizePath(locale, '/login')}?mode=signup&email=${encodeURIComponent(email)}&next=${encodeURIComponent(next)}&error=${encodeURIComponent(error.message)}`
+    );
+  }
+
+  redirect(
+    getPendingVerificationRedirect({
+      locale,
+      next,
+      email,
+      message: 'A fresh verification code has been sent to your email address.',
+    })
   );
 }

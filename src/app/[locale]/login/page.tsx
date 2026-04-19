@@ -8,7 +8,7 @@ import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
 import EmailVerificationPanel from '@/components/auth/EmailVerificationPanel';
 import { getCurrentAuthState } from '@/lib/researches/server';
-import { signIn, signUp } from './actions';
+import { resendVerificationCode, signIn, signUp, verifyEmailCode } from './actions';
 
 function getSafeNext(next: string | undefined, locale: Locale) {
   if (next && next.startsWith('/') && !next.startsWith('//')) {
@@ -41,10 +41,13 @@ export default async function LoginPage({
     locale
   );
   const error = typeof query.error === 'string' ? query.error : null;
+  const message = typeof query.message === 'string' ? query.message : null;
   const success = typeof query.success === 'string' ? query.success : null;
   const verified = typeof query.verified === 'string' ? query.verified : null;
+  const pendingEmail = typeof query.email === 'string' ? query.email : '';
   const { user } = await getCurrentAuthState();
   const isLoggedInButUnverified = Boolean(user && !user.emailVerified);
+  const isPendingCodeVerification = success === 'verify-code' && Boolean(pendingEmail);
 
   if (user?.emailVerified) {
     redirect(next);
@@ -133,6 +136,12 @@ export default async function LoginPage({
               </div>
             )}
 
+            {message && (
+              <div className="mt-5 rounded-[1.4rem] border border-primary/30 bg-primary/10 px-4 py-4 text-sm text-stone-100">
+                {message}
+              </div>
+            )}
+
             {verified === 'success' && (
               <div className="mt-5 rounded-[1.4rem] border border-primary/30 bg-primary/10 px-4 py-4 text-sm text-stone-100">
                 {ui.auth.emailVerifiedSuccess}
@@ -148,6 +157,70 @@ export default async function LoginPage({
             {isLoggedInButUnverified ? (
               <div className="mt-6">
                 <EmailVerificationPanel next={next} />
+              </div>
+            ) : isPendingCodeVerification ? (
+              <div className="mt-6 space-y-5">
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-primary/80">
+                    {ui.auth.verificationCode}
+                  </p>
+                  <h2 className="mt-3 font-[family-name:var(--font-headline)] text-2xl text-on-surface">
+                    {ui.auth.verifyCodeTitle}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-stone-300">
+                    {ui.auth.verifyCodeDescription}
+                  </p>
+                  <p className="mt-4 rounded-[1.1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-stone-200">
+                    {pendingEmail}
+                  </p>
+                  <p className="mt-4 text-sm leading-relaxed text-stone-400">
+                    {ui.auth.verifyCodeHelp}
+                  </p>
+                </div>
+
+                <form className="space-y-4">
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="next" value={next} />
+                  <input type="hidden" name="email" value={pendingEmail} />
+
+                  <div>
+                    <label
+                      htmlFor="code"
+                      className="mb-2 block text-[11px] uppercase tracking-[0.28em] text-stone-500"
+                    >
+                      {ui.auth.verificationCode}
+                    </label>
+                    <input
+                      id="code"
+                      name="code"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      required
+                      className="w-full rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface placeholder:text-stone-500 focus:border-primary/40 focus:outline-none"
+                      placeholder={ui.auth.verificationCodePlaceholder}
+                    />
+                  </div>
+
+                  <button
+                    formAction={verifyEmailCode}
+                    className="w-full rounded-[1.1rem] bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110"
+                  >
+                    {ui.auth.verifyCodeAction}
+                  </button>
+                </form>
+
+                <form>
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="next" value={next} />
+                  <input type="hidden" name="email" value={pendingEmail} />
+                  <button
+                    formAction={resendVerificationCode}
+                    className="w-full rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-stone-200 transition hover:border-primary/30 hover:text-primary"
+                  >
+                    {ui.auth.resendCode}
+                  </button>
+                </form>
               </div>
             ) : (
               <form className="mt-6 space-y-4">

@@ -13,6 +13,16 @@ const uiCopy = {
       emailVerifiedSuccess: 'Your email has been verified successfully. You can now log in.',
       emailVerificationFailed:
         'This verification link is invalid or expired. Request a new verification email and try again.',
+      verificationCode: 'Verification code',
+      verificationCodePlaceholder: 'Enter the 6-digit code',
+      verifyCodeTitle: 'Enter your verification code',
+      verifyCodeDescription:
+        'We sent a confirmation code to your email. Enter it here to verify your account, then log in manually.',
+      verifyCodeSuccess: 'We sent a fresh verification code to your email address.',
+      verifyCodeHelp:
+        'Use the newest code in your inbox. If the code has expired, request another one below.',
+      resendCode: 'Resend code',
+      verifyCodeAction: 'Verify code',
       firstName: 'First name',
       firstNamePlaceholder: 'Ada',
       helper: 'Your saved dossiers will be linked to your account and available on any device.',
@@ -96,6 +106,16 @@ const uiCopy = {
       emailVerifiedSuccess: 'Votre email a ete verifie avec succes. Vous pouvez maintenant vous connecter.',
       emailVerificationFailed:
         'Ce lien de verification est invalide ou expire. Demandez un nouvel email de verification puis reessayez.',
+      verificationCode: 'Code de verification',
+      verificationCodePlaceholder: 'Entrez le code a 6 chiffres',
+      verifyCodeTitle: 'Entrez votre code de verification',
+      verifyCodeDescription:
+        'Nous avons envoye un code de confirmation a votre email. Entrez-le ici pour verifier votre compte, puis connectez-vous manuellement.',
+      verifyCodeSuccess: 'Un nouveau code de verification a ete envoye a votre adresse email.',
+      verifyCodeHelp:
+        'Utilisez le code le plus recent recu dans votre boite mail. S il a expire, demandez-en un autre ci-dessous.',
+      resendCode: 'Renvoyer le code',
+      verifyCodeAction: 'Verifier le code',
       firstName: 'Prenom',
       firstNamePlaceholder: 'Ada',
       helper: 'Vos dossiers enregistres seront lies a votre compte et disponibles sur tous vos appareils.',
@@ -186,6 +206,22 @@ const uiCopy = {
         '\u062a\u0645 \u062a\u062d\u0642\u0642 \u0628\u0631\u064a\u062f\u0643 \u0628\u0646\u062c\u0627\u062d. \u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u0622\u0646 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644.',
       emailVerificationFailed:
         '\u0631\u0627\u0628\u0637 \u0627\u0644\u062a\u062d\u0642\u0642 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d \u0623\u0648 \u0645\u0646\u062a\u0647\u064a. \u0627\u0637\u0644\u0628 \u0631\u0633\u0627\u0644\u0629 \u062a\u062d\u0642\u0642 \u062c\u062f\u064a\u062f\u0629 \u062b\u0645 \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.',
+      verificationCode:
+        '\u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642',
+      verificationCodePlaceholder:
+        '\u0623\u062f\u062e\u0644 \u0627\u0644\u0631\u0645\u0632 \u0645\u0646 6 \u0623\u0631\u0642\u0627\u0645',
+      verifyCodeTitle:
+        '\u0623\u062f\u062e\u0644 \u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642',
+      verifyCodeDescription:
+        '\u0623\u0631\u0633\u0644\u0646\u0627 \u0631\u0645\u0632 \u062a\u0623\u0643\u064a\u062f \u0625\u0644\u0649 \u0628\u0631\u064a\u062f\u0643. \u0623\u062f\u062e\u0644\u0647 \u0647\u0646\u0627 \u0644\u062a\u062d\u0642\u064a\u0642 \u062d\u0633\u0627\u0628\u0643 \u062b\u0645 \u0633\u062c\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u064a\u062f\u0648\u064a\u0627.',
+      verifyCodeSuccess:
+        '\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0631\u0645\u0632 \u062a\u062d\u0642\u0642 \u062c\u062f\u064a\u062f \u0625\u0644\u0649 \u0628\u0631\u064a\u062f\u0643.',
+      verifyCodeHelp:
+        '\u0627\u0633\u062a\u062e\u062f\u0645 \u0622\u062e\u0631 \u0631\u0645\u0632 \u0648\u0635\u0644 \u0625\u0644\u0649 \u0628\u0631\u064a\u062f\u0643. \u0625\u0630\u0627 \u0627\u0646\u062a\u0647\u062a \u0635\u0644\u0627\u062d\u064a\u062a\u0647 \u0641\u0627\u0637\u0644\u0628 \u0631\u0645\u0632\u0627 \u062c\u062f\u064a\u062f\u0627 \u0623\u062f\u0646\u0627\u0647.',
+      resendCode:
+        '\u0625\u0639\u0627\u062f\u0629 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0631\u0645\u0632',
+      verifyCodeAction:
+        '\u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u0631\u0645\u0632',
       firstName:
         '\u0627\u0644\u0627\u0633\u0645',
       firstNamePlaceholder:
