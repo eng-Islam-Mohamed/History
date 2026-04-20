@@ -51,9 +51,12 @@ export async function POST(request: NextRequest) {
         model: 'deepseek-chat',
         messages: [
           { role: 'system', content: `${AI_PROMPT}\n\n${getLocaleInstruction(locale)}` },
-          { role: 'user', content: `Historical query: "${query}"` },
+          {
+            role: 'user',
+            content: `Historical query: "${query}"\n\nResearch this deeply. Return a topic-specific dossier with concrete chronology, major actors, turning points, causes, consequences, legacy, and enough detail for a premium history app. Do not use generic placeholder language. Make the answer specific to this exact query.`,
+          },
         ],
-        temperature: 0.7,
+        temperature: 0.35,
         max_tokens: 6000,
       }),
     });

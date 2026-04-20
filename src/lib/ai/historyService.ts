@@ -565,64 +565,16 @@ export async function searchHistoryTopic(
       throw error;
     }
 
-    console.warn('AI API error, falling back to mock topic:', error);
-    return generateFallbackTopic(query, locale);
+    console.warn('AI API error:', error);
+    throw error instanceof Error
+      ? error
+      : new Error('The AI archive is temporarily unavailable.');
   }
 }
 
 export function getTopicBySlug(slug: string): HistoryTopic | null {
   const match = mockTopics.find((t) => t.slug === slug);
   return match ? sanitizeTopic(match) : null;
-}
-
-function generateFallbackTopic(query: string, locale: Locale): HistoryTopic {
-  const category = inferCategory(query);
-  const localizedSummary = {
-    en: `An exploration into the historical significance of ${query}. This topic encompasses key events, notable figures, and lasting impacts that have shaped our understanding of this subject.`,
-    fr: `Une exploration de l'importance historique de ${query}. Ce sujet regroupe des evenements majeurs, des figures notables et des heritages durables qui ont faconne notre comprehension de cette question.`,
-    ar: `استكشاف للأهمية التاريخية لموضوع ${query}. يجمع هذا الموضوع بين أحداث رئيسية وشخصيات بارزة وآثار طويلة المدى شكّلت فهمنا له.`,
-  }[locale];
-
-  const localizedContent = {
-    en: `${query} represents a significant chapter in the tapestry of human history. The study of this topic reveals intricate connections between political, cultural, and social forces that continue to influence our world today.\n\nHistorians have long debated the precise significance and legacy of ${query}, with perspectives shifting as new evidence and interpretive frameworks emerge. What remains constant is the profound impact this subject has had on subsequent generations.\n\nThe exploration of ${query} invites us to consider how the past informs our present, and how the lessons drawn from historical study can illuminate the path forward. Each discovery adds a new thread to our understanding of the human experience.\n\nAs we delve deeper into this topic, we uncover layers of complexity that defy simple categorization. The story of ${query} is ultimately a story about human ambition, resilience, and the eternal quest for meaning.`,
-    fr: `${query} represente un chapitre important de l'histoire humaine. L'etude de ce sujet revele des liens complexes entre des forces politiques, culturelles et sociales qui continuent d'influencer notre monde.\n\nLes historiens debattent depuis longtemps de la signification precise et de l'heritage de ${query}, alors que les interpretations evoluent avec de nouvelles sources et de nouveaux cadres d'analyse. Ce qui demeure constant, c'est l'impact profond de ce sujet sur les generations suivantes.\n\nExplorer ${query}, c'est reflechir a la maniere dont le passe eclaire le present et dont les lecons de l'histoire peuvent nous orienter. Chaque decouverte ajoute un nouveau fil a notre comprehension de l'experience humaine.\n\nEn approfondissant ce sujet, nous decouvrons des couches de complexite qui resistent aux classifications simples. L'histoire de ${query} est, au fond, une histoire d'ambition humaine, de resilience et de quete de sens.`,
-    ar: `يمثل ${query} فصلاً مهماً في نسيج التاريخ الإنساني. وتكشف دراسة هذا الموضوع عن روابط معقدة بين القوى السياسية والثقافية والاجتماعية التي ما تزال تؤثر في عالمنا اليوم.\n\nلقد ناقش المؤرخون طويلاً المعنى الدقيق والإرث الذي تركه ${query}، مع تغيّر القراءات التاريخية كلما ظهرت أدلة جديدة وأطر تفسير مختلفة. وما يبقى ثابتاً هو الأثر العميق لهذا الموضوع في الأجيال اللاحقة.\n\nإن استكشاف ${query} يدعونا إلى التفكير في كيفية إضاءة الماضي لحاضرنا، وكيف يمكن للدروس المستخلصة من التاريخ أن ترشدنا إلى الأمام. فكل اكتشاف يضيف خيطاً جديداً إلى فهمنا للتجربة الإنسانية.\n\nومع التعمق في هذا الموضوع، نكشف طبقات من التعقيد تتجاوز التصنيفات البسيطة. وفي النهاية، فإن قصة ${query} هي قصة عن الطموح الإنساني والقدرة على الصمود والسعي الدائم إلى المعنى.`,
-  }[locale];
-
-  return sanitizeTopic({
-    id: generateId(),
-    title: query,
-    slug: slugify(query),
-    query,
-    category,
-    era: 'Historical Period',
-    summary: localizedSummary,
-    fullContent: localizedContent,
-    timelineEvents: [
-      {
-        year: 'Origin',
-        title: 'Beginning of the Era',
-        description: `The foundational period of ${query}, establishing the conditions for what would follow.`,
-      },
-      {
-        year: 'Peak',
-        title: 'Height of Influence',
-        description: `The zenith of ${query}'s impact on the broader historical landscape.`,
-      },
-      {
-        year: 'Legacy',
-        title: 'Enduring Legacy',
-        description: `The lasting influence of ${query} on subsequent historical developments.`,
-      },
-    ],
-    keyFigures: [],
-    relatedTopics: [],
-    relatedEvents: [],
-    region: 'Global',
-    createdAt: new Date().toISOString(),
-    coverTheme: getCoverThemeForCategory(category),
-    volumeNumber: `Vol. ${Math.floor(Math.random() * 20) + 1}`,
-  });
 }
 
 export { AI_PROMPT, getLocaleInstruction, parseAIResponse };
