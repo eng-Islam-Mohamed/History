@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
           { role: 'user', content: `Historical query: "${query}"` },
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 6000,
       }),
     });
 

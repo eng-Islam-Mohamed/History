@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
 import { useI18n } from '@/components/i18n/LocaleProvider';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { localizePath } from '@/i18n/navigation';
 import {
   recordUserActivityForCurrentUser,
@@ -22,6 +23,7 @@ export default function PathDetailClient({
   initialCompletedSteps,
 }: PathDetailClientProps) {
   const { locale } = useI18n();
+  const copy = getExperienceCopy(locale);
   const [completedSteps, setCompletedSteps] = useState<number[]>(initialCompletedSteps);
 
   const allCompleted = completedSteps.length >= path.chapters.length;
@@ -63,7 +65,7 @@ export default function PathDetailClient({
         <section className="mx-auto max-w-7xl">
           <div className="vault-frame rounded-[2.2rem] p-6 md:p-8 lg:p-10">
             <p className="text-[11px] uppercase tracking-[0.36em] text-primary/85">
-              Deep Dive Path
+              {copy.paths.eyebrow}
             </p>
             <h1 className="mt-4 font-[family-name:var(--font-headline)] text-4xl leading-tight text-on-surface md:text-6xl">
               {path.title}
@@ -74,17 +76,25 @@ export default function PathDetailClient({
 
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-5">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">Theme</p>
+                <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">
+                  {copy.paths.theme}
+                </p>
                 <p className="mt-3 text-lg text-on-surface">{path.theme}</p>
               </div>
               <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-5">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">Depth</p>
-                <p className="mt-3 text-lg text-on-surface">{path.difficulty}</p>
+                <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">
+                  {copy.paths.depth}
+                </p>
+                <p className="mt-3 text-lg text-on-surface">
+                  {copy.paths.difficultyLabels[path.difficulty]}
+                </p>
               </div>
               <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-5">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">Progress</p>
+                <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">
+                  {copy.paths.progress}
+                </p>
                 <p className="mt-3 text-lg text-on-surface">
-                  {progressPercent}% • {chaptersLeft} chapters left
+                  {progressPercent}% • {copy.paths.chaptersLeft(chaptersLeft)}
                 </p>
               </div>
             </div>
@@ -114,7 +124,7 @@ export default function PathDetailClient({
                       href={`${localizePath(locale, '/search')}?q=${encodeURIComponent(chapter.query)}`}
                       className="rounded-[1.2rem] border border-primary/25 px-4 py-3 text-center text-sm font-medium text-primary transition hover:bg-primary hover:text-on-primary"
                     >
-                      Open chapter
+                      {copy.paths.openChapter}
                     </a>
                     <button
                       type="button"
@@ -125,7 +135,7 @@ export default function PathDetailClient({
                           : 'bg-primary text-on-primary hover:brightness-110'
                       }`}
                     >
-                      {isCompleted ? 'Completed' : 'Mark chapter complete'}
+                      {isCompleted ? copy.paths.completed : copy.paths.markComplete}
                     </button>
                   </div>
                 </article>
@@ -136,10 +146,10 @@ export default function PathDetailClient({
           {allCompleted && (
             <div className="mt-8 rounded-[2rem] border border-primary/25 bg-primary/10 px-8 py-12 text-center">
               <h2 className="font-[family-name:var(--font-headline)] text-4xl text-on-surface">
-                Path completed
+                {copy.paths.completedTitle}
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-stone-300 md:text-base">
-                This path now feeds your knowledge profile, quest progress, and historical badge system.
+                {copy.paths.completedDescription}
               </p>
             </div>
           )}

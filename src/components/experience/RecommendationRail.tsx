@@ -25,7 +25,7 @@ export default function RecommendationRail({ items }: RecommendationRailProps) {
           {copy.topic.recommendations}
         </p>
         <h3 className="mt-3 font-[family-name:var(--font-headline)] text-3xl text-on-surface md:text-4xl">
-          Curated next steps
+          {copy.topic.recommendationsHeading}
         </h3>
       </div>
 

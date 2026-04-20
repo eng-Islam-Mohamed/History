@@ -104,33 +104,40 @@ function parseAIResponse(text: string, query: string): HistoryTopic {
   });
 }
 
-const AI_PROMPT = `You are a world-class historian and curator. Given a historical query, provide a comprehensive, richly detailed response in JSON format. Be factual, eloquent, and thorough.
+const AI_PROMPT = `You are a world-class historian, archivist, and museum curator. Given a historical query, provide a comprehensive, richly detailed response in JSON format. Be factual, eloquent, thorough, and expansive.
 
 Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
 {
   "title": "A compelling, evocative title for the topic",
   "category": "one of: figure, war, kingdom, country, civilization, event, empire, dynasty, era",
   "era": "Time period, e.g. '1769 – 1821 AD'",
-  "summary": "A 2-3 sentence elegant summary",
-  "fullContent": "A rich, multi-paragraph essay (at least 4 paragraphs) exploring the topic in depth. Write in an editorial, museum-quality literary style.",
+  "summary": "An elegant 3-4 sentence summary that captures scope, context, and legacy",
+  "fullContent": "A rich, multi-paragraph essay of at least 900 words and ideally 7-10 substantial paragraphs. Write in an editorial, museum-quality literary style. Cover origins, context, rise or development, defining episodes, major actors, transformations, controversies if relevant, and long-term legacy.",
   "timelineEvents": [
-    {"year": "date/year", "title": "Event name", "description": "1-2 sentence description"}
+    {"year": "date/year", "title": "Event name", "description": "2-3 sentence description"}
   ],
   "keyFigures": [
-    {"name": "Person name", "role": "Their title/role", "shortDescription": "1-2 sentence description"}
+    {"name": "Person name", "role": "Their title/role", "shortDescription": "2-3 sentence description"}
   ],
   "relatedTopics": [
-    {"name": "Topic name", "type": "figure/event/civilization/empire/etc", "shortDescription": "Brief connection"}
+    {"name": "Topic name", "type": "figure/event/civilization/empire/etc", "shortDescription": "1-2 sentence historical connection"}
   ],
   "relatedEvents": [
-    {"name": "Event name", "type": "event/conflict", "shortDescription": "Brief description"}
+    {"name": "Event name", "type": "event/conflict", "shortDescription": "1-2 sentence description"}
   ],
   "region": "Geographic region",
   "quote": "A famous relevant quote with attribution",
   "quoteAuthor": "Who said it"
 }
 
-Provide at least 4-6 timeline events, 2-3 key figures, 2-3 related topics, and 2-3 related events. Make the content rich and historically accurate.`;
+Quality requirements:
+- Make the response feel like a premium historical dossier, not a short encyclopedia blurb.
+- Prefer depth, chronology, and explanatory richness over brevity.
+- Include concrete context, consequences, and historical significance.
+- Avoid generic filler; every paragraph should add new insight.
+- If the query is broad, still produce a long structured synthesis rather than a shallow overview.
+
+Provide at least 8-10 timeline events, 4-6 key figures, 4-6 related topics, and 4-6 related events. Make the content rich, historically accurate, and substantially long.`;
 
 function getLocaleInstruction(locale: Locale): string {
   switch (locale) {

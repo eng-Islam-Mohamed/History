@@ -72,19 +72,25 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
     topic && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(topic.id)
       ? topic.id
       : null;
-  const confidence = useMemo(() => (topic ? deriveConfidence(topic) : null), [topic]);
-  const perspectives = useMemo(
-    () => (topic ? buildPerspectivePanels(topic) : []),
-    [topic]
+  const confidence = useMemo(
+    () => (topic ? deriveConfidence(topic, locale) : null),
+    [locale, topic]
   );
-  const debate = useMemo(() => (topic ? buildDebateBlock(topic) : null), [topic]);
+  const perspectives = useMemo(
+    () => (topic ? buildPerspectivePanels(topic, locale) : []),
+    [locale, topic]
+  );
+  const debate = useMemo(
+    () => (topic ? buildDebateBlock(topic, locale) : null),
+    [locale, topic]
+  );
   const recommendations = useMemo(
-    () => (topic ? buildRecommendations(topic) : []),
-    [topic]
+    () => (topic ? buildRecommendations(topic, locale) : []),
+    [locale, topic]
   );
   const timelineEvents = useMemo(
-    () => (topic ? buildTimelineEvents(topic) : []),
-    [topic]
+    () => (topic ? buildTimelineEvents(topic, locale) : []),
+    [locale, topic]
   );
 
   useEffect(() => {
@@ -161,7 +167,7 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
       null;
 
     if (!persistedId) {
-      setCollectionFeedback('This dossier could not be attached to a shelf right now.');
+      setCollectionFeedback(copy.topic.addToCollectionError);
       return;
     }
 
@@ -180,11 +186,11 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
     });
 
     if (result.error) {
-      setCollectionFeedback('This dossier could not be attached to a shelf right now.');
+      setCollectionFeedback(copy.topic.addToCollectionError);
       return;
     }
 
-    setCollectionFeedback('Dossier added to shelf.');
+    setCollectionFeedback(copy.topic.addToCollectionSuccess);
   }
 
   return (
@@ -462,7 +468,7 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
             <TimelineEngine
               events={timelineEvents}
               title={dictionary.topicPage.timelineTitle}
-              description="Use the shared engine to trace this dossier through turning points, clusters, and filtered historical themes."
+              description={copy.topic.timelineDescription}
             />
           </section>
         )}
@@ -491,7 +497,7 @@ export default function TopicDetailView({ slug, topic }: TopicDetailViewProps) {
               { key: 'timeline', label: dictionary.topicPage.timelineTitle },
               { key: 'perspectives', label: copy.topic.perspectives },
               { key: 'debate', label: copy.topic.debate },
-              { key: 'legacy', label: 'Legacy' },
+              { key: 'legacy', label: copy.topic.legacy },
             ]}
           />
         </section>

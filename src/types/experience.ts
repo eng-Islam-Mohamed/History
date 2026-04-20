@@ -78,8 +78,22 @@ export interface TimelineEngineEvent {
   confidence: ConfidenceMetadata;
 }
 
+export type CompareSectionId =
+  | 'overview'
+  | 'origin'
+  | 'timeline'
+  | 'political-structure'
+  | 'military-power'
+  | 'economy'
+  | 'culture-society'
+  | 'key-figures'
+  | 'turning-points'
+  | 'major-conflicts'
+  | 'decline-legacy'
+  | 'influence';
+
 export interface CompareSection {
-  id: string;
+  id: CompareSectionId;
   label: string;
   left: string;
   right: string;

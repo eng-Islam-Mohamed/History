@@ -561,20 +561,26 @@ img {
 
 .social-card {
   position: relative;
-  width: min(100%, 208px);
-  height: 208px;
+  width: min(100%, 212px);
+  height: 212px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 30px;
-  background: rgba(255, 255, 255, 0.03);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(217, 193, 150, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(28, 27, 28, 0.96), rgba(15, 15, 16, 0.98));
   box-shadow:
     0 18px 36px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .social-card:hover {
-  transform: translateY(-6px) scale(1.03);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 24px 42px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .social-card__background {
@@ -582,147 +588,241 @@ img {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 18% 16%, rgba(217, 193, 150, 0.2), transparent 22%),
-    radial-gradient(circle at 82% 18%, rgba(173, 200, 213, 0.16), transparent 24%),
-    linear-gradient(155deg, rgba(19, 19, 20, 0.98) 0%, rgba(27, 25, 24, 0.96) 48%, rgba(48, 33, 10, 0.94) 100%);
+    radial-gradient(circle at 20% 18%, rgba(217, 193, 150, 0.18), transparent 22%),
+    radial-gradient(circle at 76% 18%, rgba(173, 200, 213, 0.14), transparent 24%),
+    linear-gradient(160deg, rgba(19, 19, 20, 0.98) 0%, rgba(28, 26, 24, 0.96) 58%, rgba(43, 31, 13, 0.94) 100%);
+}
+
+.social-card__halo {
+  position: absolute;
+  inset: 34px 52px auto 52px;
+  height: 64px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(217, 193, 150, 0.18), transparent 72%),
+    radial-gradient(circle at 56% 52%, rgba(173, 200, 213, 0.14), transparent 78%);
+  filter: blur(8px);
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 .social-card__logo {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translate(-50%, -50%);
-  z-index: 5;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  top: 26px;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
   line-height: 1;
   text-transform: uppercase;
-  color: rgba(245, 223, 182, 0.96);
-  text-shadow: 0 0 22px rgba(217, 193, 150, 0.18);
+  color: rgba(245, 223, 182, 0.78);
   pointer-events: none;
-  transition: all 0.6s ease-in-out;
+}
+
+.social-card__arch {
+  position: absolute;
+  top: 66px;
+  left: 48px;
+  width: 76px;
+  height: 132px;
+  border-radius: 38px 38px 22px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 24%),
+    linear-gradient(180deg, rgba(20, 23, 26, 0.74), rgba(15, 14, 15, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 20px 30px rgba(0, 0, 0, 0.2);
+}
+
+.social-card__arch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(217, 193, 150, 0.08), transparent 36%),
+    radial-gradient(circle at 70% 14%, rgba(173, 200, 213, 0.12), transparent 30%);
+  opacity: 0.8;
+}
+
+.social-card__column {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .social-card__icon {
   display: inline-block;
   width: 22px;
   height: 22px;
-  pointer-events: none;
 }
 
 .social-card__svg {
   fill: rgba(255, 255, 255, 0.82);
   width: 100%;
   height: 100%;
-  transition: all 0.45s ease-in-out;
+  transition: transform 0.35s ease, fill 0.35s ease;
 }
 
-.social-card__box {
-  position: absolute;
+.social-card__button {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  text-align: right;
+  width: 42px;
+  height: 42px;
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 42%),
-    linear-gradient(180deg, rgba(36, 34, 35, 0.82), rgba(17, 17, 18, 0.9));
+    linear-gradient(180deg, rgba(38, 36, 37, 0.86), rgba(17, 17, 18, 0.92));
   border-top: 1px solid rgba(255, 255, 255, 0.18);
   border-right: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 10% 13% 42% 0% / 10% 12% 75% 0%;
-  box-shadow: rgba(15, 15, 18, 0.42) -8px 8px 28px 0;
-  transform-origin: bottom left;
+  border-radius: 14px;
+  box-shadow: rgba(15, 15, 18, 0.42) 0 12px 20px 0;
   backdrop-filter: blur(14px);
-  z-index: 4;
-  cursor: pointer;
-  pointer-events: auto;
   text-decoration: none;
-  transition: all 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.35s ease, border-color 0.35s ease;
 }
 
-.social-card__box::before {
-  content: "";
+.social-card__button:hover {
+  transform: translateX(3px);
+  border-color: rgba(217, 193, 150, 0.32);
+}
+
+.social-card__button:hover .social-card__svg {
+  fill: #ffffff;
+  transform: scale(1.08);
+}
+
+.social-card__button-glow {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.4s ease-in-out;
+  border-radius: 14px;
+  opacity: 0.75;
 }
 
-.social-card__box:hover::before {
-  opacity: 1;
+.social-card__button--instagram .social-card__button-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(216, 178, 160, 0.18), transparent 70%);
 }
 
-.social-card__box:hover .social-card__svg {
-  fill: white;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+.social-card__button--github .social-card__button-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(131, 119, 108, 0.2), transparent 70%);
 }
 
-.social-card__box--instagram {
-  width: 70%;
-  height: 70%;
-  bottom: -70%;
-  left: -70%;
+.social-card__button--facebook .social-card__button-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(173, 200, 213, 0.2), transparent 70%);
 }
 
-.social-card__box--instagram::before {
-  background: radial-gradient(circle at 30% 107%, rgba(245, 223, 182, 0.95) 0%, rgba(216, 178, 160, 0.9) 46%, rgba(189, 161, 111, 0.92) 94%);
+.footer-feature-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.05), transparent 36%),
+    linear-gradient(180deg, rgba(28, 27, 28, 0.92), rgba(12, 12, 13, 0.96));
+  padding: 0.95rem 1rem;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
 }
 
-.social-card__box--github {
-  width: 50%;
-  height: 50%;
-  bottom: -50%;
-  left: -50%;
-  transition-delay: 0.14s;
+.footer-feature-card__orbit {
+  position: absolute;
+  right: -20px;
+  top: -18px;
+  width: 68px;
+  height: 68px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 193, 150, 0.12);
+  opacity: 0.6;
+  animation: footer-feature-orbit 8s linear infinite;
 }
 
-.social-card__box--github::before {
-  background: radial-gradient(circle at 30% 107%, rgba(131, 119, 108, 0.95) 0%, rgba(59, 55, 57, 0.96) 90%);
+.footer-feature-card__line {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(217, 193, 150, 0), rgba(217, 193, 150, 0.7), rgba(217, 193, 150, 0));
+  transform: translateX(-35%);
+  animation: footer-feature-scan 4.8s ease-in-out infinite;
 }
 
-.social-card__box--facebook {
-  width: 30%;
-  height: 30%;
-  bottom: -30%;
-  left: -30%;
-  transition-delay: 0.28s;
+.footer-feature-card__icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 2.3rem;
+  width: 2.3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 193, 150, 0.18);
+  background: rgba(217, 193, 150, 0.08);
+  color: rgba(245, 223, 182, 0.92);
 }
 
-.social-card__box--facebook::before {
-  background: radial-gradient(circle at 30% 107%, rgba(173, 200, 213, 0.94) 0%, rgba(34, 56, 69, 0.96) 92%);
+.footer-feature-card__label {
+  position: relative;
+  z-index: 1;
+  margin: 0.7rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: rgba(243, 239, 232, 0.84);
 }
 
-.social-card__box--echo {
-  width: 10%;
-  height: 10%;
-  bottom: -10%;
-  left: -10%;
-  transition-delay: 0.42s;
+.footer-feature-card--1 {
+  background:
+    radial-gradient(circle at 84% 20%, rgba(112, 153, 215, 0.08), transparent 30%),
+    linear-gradient(180deg, rgba(20, 27, 39, 0.92), rgba(11, 12, 15, 0.96));
 }
 
-.social-card:hover .social-card__box {
-  bottom: -1px;
-  left: -1px;
+.footer-feature-card--2 {
+  background:
+    radial-gradient(circle at 84% 18%, rgba(217, 193, 150, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(30, 28, 22, 0.92), rgba(12, 12, 13, 0.96));
 }
 
-.social-card:hover .social-card__logo {
-  transform: translate(40px, -70px);
-  letter-spacing: 0.08em;
+.footer-feature-card--3 {
+  background:
+    radial-gradient(circle at 84% 18%, rgba(96, 170, 140, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(18, 27, 25, 0.92), rgba(12, 12, 13, 0.96));
+}
+
+@keyframes footer-feature-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes footer-feature-scan {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateX(-35%);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: translateX(35%);
+  }
 }
 
 @media (max-width: 768px) {
   .social-card {
     width: min(100%, 196px);
     height: 196px;
-  }
-
-  .social-card:hover .social-card__logo {
-    transform: translate(34px, -62px);
   }
 }
 

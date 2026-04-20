@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MessageSquareQuote } from 'lucide-react';
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { getExperienceCopy } from '@/i18n/experience-copy';
@@ -12,20 +12,18 @@ interface AskEraPanelProps {
   topic: HistoryTopic;
 }
 
-const presets = [
-  'a citizen living in the era',
-  'a court scholar',
-  'a military observer',
-  'a merchant moving across the region',
-];
-
 export default function AskEraPanel({ topic }: AskEraPanelProps) {
   const { locale } = useI18n();
   const copy = getExperienceCopy(locale);
   const [prompt, setPrompt] = useState<string>(copy.askEra.defaultPrompt);
-  const [preset, setPreset] = useState(presets[0]);
+  const [preset, setPreset] = useState(copy.askEra.presets[0]);
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<AskEraResponse | null>(null);
+
+  useEffect(() => {
+    setPrompt(copy.askEra.defaultPrompt);
+    setPreset(copy.askEra.presets[0]);
+  }, [copy.askEra.defaultPrompt, copy.askEra.presets, locale]);
 
   async function handleGenerate() {
     setIsLoading(true);
@@ -47,9 +45,9 @@ export default function AskEraPanel({ topic }: AskEraPanelProps) {
       }
 
       const payload = await result.json();
-      setResponse(payload.result ?? buildAskEraFallback(topic, preset));
+      setResponse(payload.result ?? buildAskEraFallback(topic, preset, locale));
     } catch {
-      setResponse(buildAskEraFallback(topic, preset));
+      setResponse(buildAskEraFallback(topic, preset, locale));
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +64,7 @@ export default function AskEraPanel({ topic }: AskEraPanelProps) {
             {copy.topic.askEra}
           </p>
           <h3 className="mt-3 font-[family-name:var(--font-headline)] text-3xl text-on-surface md:text-4xl">
-            Historical perspective simulation
+            {copy.topic.askEraTitle}
           </h3>
           <p className="mt-3 text-sm leading-relaxed text-stone-400">{copy.askEra.caution}</p>
         </div>
@@ -78,7 +76,7 @@ export default function AskEraPanel({ topic }: AskEraPanelProps) {
           onChange={(event) => setPreset(event.target.value)}
           className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface focus:border-primary/40 focus:outline-none"
         >
-          {presets.map((item) => (
+          {copy.askEra.presets.map((item) => (
             <option key={item} value={item} className="bg-surface text-on-surface">
               {item}
             </option>

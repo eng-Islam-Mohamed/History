@@ -1,4 +1,5 @@
 import { Locale } from '@/i18n/config';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { localizePath } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { hasSupabaseEnv } from '@/lib/supabase/env';
@@ -293,6 +294,7 @@ export async function getPathProgressForCurrentUser(pathSlug: string) {
 }
 
 export async function getContinueExploringForCurrentUser(locale: Locale) {
+  const copy = getExperienceCopy(locale);
   const userId = await getCurrentUserId();
   if (!userId) {
     return [] as ContinueExploringItem[];
@@ -355,7 +357,7 @@ export async function getContinueExploringForCurrentUser(locale: Locale) {
       title: recentBook.title,
       href: `${localizePath(locale, `/topic/${recentBook.slug}`)}?saved=${encodeURIComponent(recentBook.id)}`,
       summary: recentBook.summary_snippet,
-      eyebrow: 'Recent dossier',
+      eyebrow: copy.card.collectible,
       coverTheme: recentBook.cover_theme,
     });
   }
@@ -366,7 +368,7 @@ export async function getContinueExploringForCurrentUser(locale: Locale) {
       title: comparison.title,
       href: `${localizePath(locale, '/compare')}?saved=${encodeURIComponent(comparison.id)}`,
       summary: comparison.summary,
-      eyebrow: 'Saved comparison',
+      eyebrow: copy.pages.compare,
       coverTheme: 'royal-purple',
     });
   }
@@ -376,8 +378,13 @@ export async function getContinueExploringForCurrentUser(locale: Locale) {
       type: 'path',
       title: resume.last_path_slug.replace(/-/g, ' '),
       href: localizePath(locale, `/paths/${resume.last_path_slug}`),
-      summary: 'Resume the last guided journey you opened.',
-      eyebrow: 'Deep dive path',
+      summary:
+        locale === 'fr'
+          ? 'Reprenez le dernier parcours guidé ouvert.'
+          : locale === 'ar'
+            ? 'تابع آخر مسار موجه فتحته.'
+            : 'Resume the last guided journey you opened.',
+      eyebrow: copy.paths.eyebrow,
       coverTheme: 'midnight-scholar',
     });
   }
@@ -387,8 +394,13 @@ export async function getContinueExploringForCurrentUser(locale: Locale) {
       type: 'collection',
       title: collection.title,
       href: localizePath(locale, `/collections/${collection.slug}`),
-      summary: 'Return to a curated shelf in your archive.',
-      eyebrow: 'Collection',
+      summary:
+        locale === 'fr'
+          ? 'Revenez à une étagère organisée dans votre archive.'
+          : locale === 'ar'
+            ? 'ارجع إلى رف منسق داخل أرشيفك.'
+            : 'Return to a curated shelf in your archive.',
+      eyebrow: copy.collections.eyebrow,
       coverTheme: collection.cover_theme,
     });
   }

@@ -10,6 +10,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import SearchAccessModal from '@/components/auth/SearchAccessModal';
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { getLocaleLabel, Locale, locales } from '@/i18n/config';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { localizePath, replacePathLocale, stripLocaleFromPath } from '@/i18n/navigation';
 import { getUiCopy } from '@/i18n/ui-copy';
 import SearchCtaButton from '@/components/layout/SearchCtaButton';
@@ -24,6 +25,7 @@ export default function Navbar() {
   const { dictionary, locale } = useI18n();
   const { hasSupabase, isAuthenticated, profile, user } = useAuth();
   const ui = getUiCopy(locale);
+  const experienceCopy = getExperienceCopy(locale);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -36,7 +38,7 @@ export default function Navbar() {
     { href: '/', label: dictionary.nav.home },
     { href: '/search', label: dictionary.nav.search },
     { href: '/library', label: dictionary.nav.library },
-    { href: '/compare', label: 'Compare' },
+    { href: '/compare', label: experienceCopy.pages.compare },
   ];
 
   const closeOverlays = () => {

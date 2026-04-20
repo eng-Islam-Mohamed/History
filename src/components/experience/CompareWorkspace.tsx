@@ -73,7 +73,7 @@ export default function CompareWorkspace({
 
       setLeftTopic(left);
       setRightTopic(right);
-      setComparison(buildComparisonExperience(left, right));
+      setComparison(buildComparisonExperience(left, right, locale));
       setSavedComparison(null);
     } finally {
       setIsLoading(false);
@@ -87,7 +87,7 @@ export default function CompareWorkspace({
     setRightTopic(leftTopic);
 
     if (leftTopic && rightTopic) {
-      setComparison(buildComparisonExperience(rightTopic, leftTopic));
+      setComparison(buildComparisonExperience(rightTopic, leftTopic, locale));
       setSavedComparison(null);
     }
   }
@@ -153,7 +153,7 @@ export default function CompareWorkspace({
     });
 
     if (!result.error) {
-      setFeedback('Comparison added to shelf.');
+      setFeedback(copy.compare.comparisonAdded);
     }
   }
 
@@ -169,7 +169,7 @@ export default function CompareWorkspace({
 
     const saveResult = await saveResearchForCurrentUser(topic, locale);
     if (saveResult.error || !saveResult.topic) {
-      setFeedback('This dossier could not be added to the shelf right now.');
+      setFeedback(copy.compare.addTopicError);
       return;
     }
 
@@ -188,7 +188,7 @@ export default function CompareWorkspace({
     });
 
     if (!addResult.error) {
-      setFeedback(`${saveResult.topic.title} added to shelf.`);
+      setFeedback(copy.compare.addTopicSuccess(saveResult.topic.title));
     }
   }
 
@@ -259,7 +259,7 @@ export default function CompareWorkspace({
             disabled={isLoading}
             className="rounded-[1.2rem] bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110 disabled:opacity-60"
           >
-            {isLoading ? copy.compare.saving : copy.compare.compare}
+            {isLoading ? copy.compare.loading : copy.compare.compare}
           </button>
           <button
             type="button"
@@ -329,7 +329,7 @@ export default function CompareWorkspace({
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.34em] text-secondary/80">
-                  Structured comparison
+                  {copy.compare.structured}
                 </p>
                 <h2 className="mt-3 font-[family-name:var(--font-headline)] text-4xl text-on-surface">
                   {comparison.title}

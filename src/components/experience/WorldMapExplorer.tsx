@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { Compass } from 'lucide-react';
+import { useI18n } from '@/components/i18n/LocaleProvider';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { HistoricalMapHotspot } from '@/types/experience';
 import ConfidenceBadge from '@/components/experience/ConfidenceBadge';
 import { cn } from '@/lib/utils';
@@ -10,11 +12,16 @@ interface WorldMapExplorerProps {
   hotspots: HistoricalMapHotspot[];
 }
 
-function formatHistoricalYear(year: number) {
-  return year < 0 ? `${Math.abs(year)} BCE` : `${year} CE`;
+function formatHistoricalYear(
+  year: number,
+  eras: { bce: string; ce: string }
+) {
+  return year < 0 ? `${Math.abs(year)} ${eras.bce}` : `${year} ${eras.ce}`;
 }
 
 export default function WorldMapExplorer({ hotspots }: WorldMapExplorerProps) {
+  const { locale } = useI18n();
+  const copy = getExperienceCopy(locale);
   const [year, setYear] = useState(1450);
   const [activeId, setActiveId] = useState(hotspots[0]?.id ?? '');
 
@@ -34,25 +41,23 @@ export default function WorldMapExplorer({ hotspots }: WorldMapExplorerProps) {
       <div className="vault-frame rounded-[2.2rem] p-6 md:p-8 lg:p-10">
         <div className="max-w-3xl">
           <p className="text-[11px] uppercase tracking-[0.36em] text-primary/85">
-            Living World Map
+            {copy.map.eyebrow}
           </p>
           <h1 className="mt-4 font-[family-name:var(--font-headline)] text-4xl leading-tight text-on-surface md:text-6xl">
-            A stylized atlas of influence and movement.
+            {copy.map.title}
           </h1>
           <p className="mt-5 text-sm leading-relaxed text-stone-400 md:text-base">
-            This staged map layer is intentionally restrained: it highlights historically
-            relevant zones and routes without pretending to full border precision when the
-            source layer is still interpretive.
+            {copy.map.description}
           </p>
         </div>
 
         <div className="mt-8 rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
           <div className="flex items-center justify-between gap-4">
             <span className="text-[11px] uppercase tracking-[0.3em] text-stone-500">
-              Active year
+              {copy.map.activeYear}
             </span>
             <span className="font-[family-name:var(--font-headline)] text-4xl text-primary">
-              {formatHistoricalYear(year)}
+              {formatHistoricalYear(year, copy.map.eras)}
             </span>
           </div>
           <input
@@ -70,14 +75,14 @@ export default function WorldMapExplorer({ hotspots }: WorldMapExplorerProps) {
           <div className="atlas-surface relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/20 p-4">
             <div className="absolute inset-x-4 top-4 z-10 flex flex-wrap items-start justify-between gap-3">
               <div className="rounded-full border border-white/10 bg-black/35 px-4 py-2 text-[11px] uppercase tracking-[0.28em] text-stone-300 backdrop-blur-md">
-                Interpretive atlas surface
+                {copy.map.interpretiveSurface}
               </div>
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-primary/90">
-                  {activeHotspots.length} live nodes
+                  {copy.map.liveNodes(activeHotspots.length)}
                 </span>
                 <span className="rounded-full border border-white/10 bg-black/30 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-stone-400">
-                  {hotspots.length} historic anchors
+                  {copy.map.historicAnchors(hotspots.length)}
                 </span>
               </div>
             </div>
@@ -90,10 +95,14 @@ export default function WorldMapExplorer({ hotspots }: WorldMapExplorerProps) {
             <div className="atlas-continent atlas-continent--europe" />
             <div className="atlas-continent atlas-continent--asia" />
             <div className="atlas-continent atlas-continent--americas" />
-            <span className="atlas-label atlas-label--mediterranean">Mediterranean</span>
-            <span className="atlas-label atlas-label--sahara">Sahara corridors</span>
-            <span className="atlas-label atlas-label--mesopotamia">Mesopotamia</span>
-            <span className="atlas-label atlas-label--atlantic">Atlantic</span>
+            <span className="atlas-label atlas-label--mediterranean">
+              {copy.map.routes.mediterranean}
+            </span>
+            <span className="atlas-label atlas-label--sahara">{copy.map.routes.sahara}</span>
+            <span className="atlas-label atlas-label--mesopotamia">
+              {copy.map.routes.mesopotamia}
+            </span>
+            <span className="atlas-label atlas-label--atlantic">{copy.map.routes.atlantic}</span>
 
             {hotspots.map((spot) => {
               const isActive = activeSpotIds.has(spot.id);
@@ -140,7 +149,7 @@ export default function WorldMapExplorer({ hotspots }: WorldMapExplorerProps) {
             <div className="absolute bottom-4 left-4 rounded-[1.4rem] border border-white/10 bg-black/35 px-4 py-3 text-sm text-stone-300 backdrop-blur-md">
               <span className="inline-flex items-center gap-2">
                 <Compass size={15} className="text-primary/80" />
-                {activeHotspots.length} active overlays
+                {copy.map.activeOverlays(activeHotspots.length)}
               </span>
             </div>
           </div>
@@ -161,14 +170,15 @@ export default function WorldMapExplorer({ hotspots }: WorldMapExplorerProps) {
                   {activeHotspot.summary}
                 </p>
                 <p className="mt-4 text-sm text-stone-500">
-                  Active from {formatHistoricalYear(activeHotspot.startYear)} to{' '}
-                  {formatHistoricalYear(activeHotspot.endYear)}
+                  {copy.map.activeRange(
+                    formatHistoricalYear(activeHotspot.startYear, copy.map.eras),
+                    formatHistoricalYear(activeHotspot.endYear, copy.map.eras)
+                  )}
                 </p>
               </>
             ) : (
               <p className="text-sm leading-relaxed text-stone-400">
-                No curated overlay is active for this year. Move the slider to a different
-                period.
+                {copy.map.noOverlay}
               </p>
             )}
           </aside>

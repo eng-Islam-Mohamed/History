@@ -5,6 +5,7 @@ import { Clock3 } from 'lucide-react';
 import { DeepDivePath } from '@/types/experience';
 import { localizePath } from '@/i18n/navigation';
 import { useI18n } from '@/components/i18n/LocaleProvider';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import HistoricalVisualCard from '@/components/experience/HistoricalVisualCard';
 
 interface PathCardProps {
@@ -13,13 +14,14 @@ interface PathCardProps {
 
 export default function PathCard({ path }: PathCardProps) {
   const { locale } = useI18n();
+  const copy = getExperienceCopy(locale);
 
   return (
     <div className="flex h-full flex-col gap-4">
       <HistoricalVisualCard
         title={path.title}
         summary={path.description}
-        era={`${path.chapters.length} chapters`}
+        era={copy.paths.chapters(path.chapters.length)}
         category="path"
         coverTheme={path.coverTheme}
         meta={path.theme}
@@ -28,10 +30,10 @@ export default function PathCard({ path }: PathCardProps) {
       />
       <div className="mt-auto rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
         <div className="flex items-center justify-between gap-3 text-sm text-stone-400">
-          <span>{path.difficulty}</span>
+          <span>{copy.paths.difficultyLabels[path.difficulty]}</span>
           <span className="inline-flex items-center gap-2">
             <Clock3 size={14} className="text-primary/70" />
-            {path.estimatedMinutes} min
+            {copy.paths.minutes(path.estimatedMinutes)}
           </span>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">

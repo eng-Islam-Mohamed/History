@@ -1,12 +1,22 @@
 import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
 import TimelineEngine from '@/components/experience/TimelineEngine';
+import { Locale } from '@/i18n/config';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { mockTopics } from '@/data/mockTopics';
 import { buildTimelineEvents } from '@/lib/experience/intelligence';
 
-export default function LocalizedTimelinePage() {
+interface LocalizedTimelinePageProps {
+  params: Promise<{ locale: Locale }>;
+}
+
+export default async function LocalizedTimelinePage({
+  params,
+}: LocalizedTimelinePageProps) {
+  const { locale } = await params;
+  const copy = getExperienceCopy(locale);
   const events = mockTopics
-    .flatMap((topic) => buildTimelineEvents(topic))
+    .flatMap((topic) => buildTimelineEvents(topic, locale))
     .sort((a, b) => a.startYear - b.startYear);
 
   return (
@@ -16,8 +26,8 @@ export default function LocalizedTimelinePage() {
         <section className="mx-auto max-w-7xl">
           <TimelineEngine
             events={events}
-            title="World history through clustered turning points"
-            description="This shared timeline engine powers topic pages, compare mode, and deep-dive paths. Use it here as a global surface for political, cultural, military, and civilizational shifts."
+            title={copy.timeline.title}
+            description={copy.timeline.description}
           />
         </section>
       </main>

@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { useI18n } from '@/components/i18n/LocaleProvider';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { CoverTheme, TopicCategory } from '@/types';
 import { getCoverStyle, cn } from '@/lib/utils';
 
@@ -45,8 +47,12 @@ export default function HistoricalVisualCard({
   meta,
   className,
 }: HistoricalVisualCardProps) {
+  const { locale } = useI18n();
+  const copy = getExperienceCopy(locale);
   const style = getCoverStyle(coverTheme);
-  const categoryLabel = String(category).replace(/-/g, ' ');
+  const categoryKey = String(category) as keyof typeof copy.card.categories;
+  const categoryLabel =
+    copy.card.categories[categoryKey] ?? String(category).replace(/-/g, ' ');
 
   const content = (
     <>
@@ -76,7 +82,7 @@ export default function HistoricalVisualCard({
             className="max-w-[15rem] text-[11px] uppercase tracking-[0.26em]"
             style={{ color: `${style.accentColor}A0` }}
           >
-            {meta || 'Collectible dossier'}
+            {meta || copy.card.collectible}
           </span>
           {href && (
             <ArrowRight size={16} className="text-primary transition group-hover:translate-x-1" />

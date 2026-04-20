@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       const perspective = String(body.perspective || 'a citizen of the era');
       const prompt = String(body.prompt || '');
 
-      const fallback = buildAskEraFallback(topic, perspective);
+      const fallback = buildAskEraFallback(topic, perspective, locale);
       const content = await requestIntelligence([
         {
           role: 'system',
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     if (body.mode === 'compare') {
       const left = body.left as HistoryTopic;
       const right = body.right as HistoryTopic;
-      const fallback = buildComparisonExperience(left, right);
+      const fallback = buildComparisonExperience(left, right, locale);
       const content = await requestIntelligence([
         {
           role: 'system',

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useI18n } from '@/components/i18n/LocaleProvider';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { PerspectivePanel } from '@/types/experience';
 import { cn } from '@/lib/utils';
 
@@ -9,6 +11,8 @@ interface PerspectiveTabsProps {
 }
 
 export default function PerspectiveTabs({ panels }: PerspectiveTabsProps) {
+  const { locale } = useI18n();
+  const copy = getExperienceCopy(locale);
   const [activeLens, setActiveLens] = useState(panels[0]?.lens);
   const activePanel = panels.find((panel) => panel.lens === activeLens) ?? panels[0];
 
@@ -20,10 +24,10 @@ export default function PerspectiveTabs({ panels }: PerspectiveTabsProps) {
     <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 md:p-8">
       <div className="mb-6">
         <p className="text-[11px] uppercase tracking-[0.34em] text-secondary/80">
-          Perspective mode
+          {copy.topic.perspectiveHeading}
         </p>
         <h3 className="mt-3 font-[family-name:var(--font-headline)] text-3xl text-on-surface md:text-4xl">
-          Multiple analytical lenses
+          {copy.topic.perspectiveTitle}
         </h3>
       </div>
 

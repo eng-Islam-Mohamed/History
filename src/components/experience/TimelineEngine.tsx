@@ -1,6 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Locale } from '@/i18n/config';
+import { useI18n } from '@/components/i18n/LocaleProvider';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { TimelineEngineEvent } from '@/types/experience';
 import { cn } from '@/lib/utils';
 import ConfidenceBadge from '@/components/experience/ConfidenceBadge';
@@ -15,17 +18,33 @@ type ZoomLevel = 'century' | 'decade' | 'year';
 
 const zoomLevels: ZoomLevel[] = ['century', 'decade', 'year'];
 
-function labelForZoom(event: TimelineEngineEvent, zoom: ZoomLevel) {
+function labelForZoom(event: TimelineEngineEvent, zoom: ZoomLevel, locale: Locale) {
   if (zoom === 'year') {
     return event.yearLabel;
   }
 
   if (zoom === 'decade') {
     const base = Math.floor(event.startYear / 10) * 10;
+    if (locale === 'fr') {
+      return `années ${base}`;
+    }
+
+    if (locale === 'ar') {
+      return `عقد ${base}`;
+    }
+
     return `${base}s`;
   }
 
   const century = Math.floor(Math.abs(event.startYear) / 100) + 1;
+  if (locale === 'fr') {
+    return event.startYear < 0 ? `${century}e siècle av. J.-C.` : `${century}e siècle`;
+  }
+
+  if (locale === 'ar') {
+    return event.startYear < 0 ? `القرن ${century} ق.م` : `القرن ${century}`;
+  }
+
   return event.startYear < 0 ? `${century}th century BC` : `${century}th century`;
 }
 
@@ -34,6 +53,8 @@ export default function TimelineEngine({
   title = 'Historical signal line',
   description = 'Explore the chronology without losing density or thematic context.',
 }: TimelineEngineProps) {
+  const { locale } = useI18n();
+  const copy = getExperienceCopy(locale);
   const [zoom, setZoom] = useState<ZoomLevel>('decade');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [activeEventId, setActiveEventId] = useState<string>(events[0]?.id ?? '');
@@ -65,7 +86,7 @@ export default function TimelineEngine({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.34em] text-secondary/80">
-            Interactive timeline engine
+            {copy.timeline.engineEyebrow}
           </p>
           <h3 className="mt-3 font-[family-name:var(--font-headline)] text-3xl text-on-surface md:text-4xl">
             {title}
@@ -88,7 +109,11 @@ export default function TimelineEngine({
                   : 'border border-white/10 bg-white/[0.03] text-stone-300 hover:border-primary/25'
               )}
             >
-              {level}
+              {level === 'century'
+                ? copy.timeline.zoomCentury
+                : level === 'decade'
+                  ? copy.timeline.zoomDecade
+                  : copy.timeline.zoomYear}
             </button>
           ))}
         </div>
@@ -107,7 +132,7 @@ export default function TimelineEngine({
                 : 'border border-white/10 bg-white/[0.03] text-stone-400 hover:border-primary/25'
             )}
           >
-            {category}
+            {copy.timeline.categories[category] ?? category}
           </button>
         ))}
       </div>
@@ -128,7 +153,7 @@ export default function TimelineEngine({
                 )}
               >
                 <p className="text-[11px] uppercase tracking-[0.3em] text-primary/80">
-                  {labelForZoom(event, zoom)}
+                  {labelForZoom(event, zoom, locale)}
                 </p>
                 <h4 className="mt-3 font-[family-name:var(--font-headline)] text-2xl text-on-surface">
                   {event.title}

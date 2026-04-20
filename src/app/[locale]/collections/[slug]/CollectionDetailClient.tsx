@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
 import HistoricalVisualCard from '@/components/experience/HistoricalVisualCard';
 import { useI18n } from '@/components/i18n/LocaleProvider';
+import { getExperienceCopy } from '@/i18n/experience-copy';
 import { localizePath } from '@/i18n/navigation';
 import {
   deleteCollectionForCurrentUser,
@@ -26,6 +27,7 @@ export default function CollectionDetailClient({
 }: CollectionDetailClientProps) {
   const router = useRouter();
   const { locale } = useI18n();
+  const copy = getExperienceCopy(locale);
   const [title, setTitle] = useState(collection.title);
   const [description, setDescription] = useState(collection.description ?? '');
   const [coverTheme, setCoverTheme] = useState<CoverTheme>(collection.coverTheme);
@@ -77,7 +79,7 @@ export default function CollectionDetailClient({
         <section className="mx-auto max-w-7xl">
           <div className="vault-frame rounded-[2.2rem] p-6 md:p-8 lg:p-10">
             <p className="text-[11px] uppercase tracking-[0.36em] text-primary/85">
-              Collection detail
+              {copy.collections.detailEyebrow}
             </p>
             <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_220px_auto_auto]">
               <input
@@ -88,7 +90,7 @@ export default function CollectionDetailClient({
               <input
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
-                placeholder="Description"
+                placeholder={copy.collections.descriptionField}
                 className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-on-surface focus:border-primary/40 focus:outline-none"
               />
               <input
@@ -101,14 +103,14 @@ export default function CollectionDetailClient({
                 onClick={() => void handleSaveCollection()}
                 className="rounded-[1.2rem] bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition hover:brightness-110"
               >
-                Save shelf
+                {copy.collections.save}
               </button>
               <button
                 type="button"
                 onClick={() => void handleDeleteCollection()}
                 className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-5 py-3 text-sm text-stone-200 transition hover:border-error/30 hover:text-error"
               >
-                Delete shelf
+                {copy.collections.delete}
               </button>
             </div>
           </div>
@@ -118,19 +120,19 @@ export default function CollectionDetailClient({
               <div key={item.id} className="space-y-4">
                 <HistoricalVisualCard
                   title={item.title}
-                  summary={item.summary || 'A saved object from your premium archive.'}
+                  summary={item.summary || copy.collections.itemSummary}
                   era={item.entityType}
                   category="path"
                   coverTheme={item.coverTheme}
                   href={getItemHref(item)}
-                  meta="Collection item"
+                  meta={copy.collections.collectionItem}
                 />
                 <button
                   type="button"
                   onClick={() => void handleRemoveItem(item.id)}
                   className="w-full rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-stone-200 transition hover:border-error/30 hover:text-error"
                 >
-                  Remove
+                  {copy.collections.remove}
                 </button>
               </div>
             ))}
