@@ -111,7 +111,7 @@ function SearchContent() {
         return;
       }
 
-      setError(dictionary.searchPage.error);
+      setError(err instanceof Error && err.message ? err.message : dictionary.searchPage.error);
       console.warn('Search request failed:', err);
     } finally {
       setIsLoading(false);

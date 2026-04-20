@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { defaultLocale, isLocale } from '@/i18n/config';
 import { getLocaleInstruction } from '@/lib/ai/historyService';
+import { requestAiCompletion } from '@/lib/ai/provider';
 import {
   buildAskEraFallback,
   buildComparisonExperience,
@@ -17,33 +18,16 @@ function parseJsonPayload<T>(content: string): T | null {
 }
 
 async function requestIntelligence(messages: Array<{ role: 'system' | 'user'; content: string }>) {
-  const apiKey = process.env.AI_API_KEY;
-  const apiUrl = process.env.NEXT_PUBLIC_AI_API_URL || 'https://api.deepseek.com';
-
-  if (!apiKey) {
-    return null;
-  }
-
-  const response = await fetch(`${apiUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'deepseek-chat',
+  try {
+    return await requestAiCompletion({
       messages,
       temperature: 0.55,
-      max_tokens: 2200,
-    }),
-  });
-
-  if (!response.ok) {
+      maxTokens: 2200,
+      retries: 1,
+    });
+  } catch {
     return null;
   }
-
-  const payload = await response.json();
-  return payload.choices?.[0]?.message?.content as string | undefined;
 }
 
 export async function POST(request: NextRequest) {

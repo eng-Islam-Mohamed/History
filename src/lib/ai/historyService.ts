@@ -105,6 +105,76 @@ function getArrayOfStrings(value: unknown): string[] {
     : [];
 }
 
+function getObjectField(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+function getNormalizedPayload(parsed: Record<string, unknown>): Record<string, unknown> {
+  const dossier = getObjectField(parsed.dossier);
+  if (!dossier) {
+    return parsed;
+  }
+
+  const subject = getObjectField(dossier.subject);
+  const majorActors = getObjectField(dossier.major_actors);
+  const chronology = getArrayOfObjects(dossier.concrete_chronology).map((entry) => ({
+    date: getStringField(entry.year) || getStringField(entry.date),
+    title: getStringField(entry.title) || getStringField(entry.event),
+    description: getStringField(entry.description) || getStringField(entry.event),
+  }));
+  const causes = getArrayOfStrings(dossier.causes);
+  const consequences = getArrayOfStrings(dossier.consequences);
+  const legacy = getArrayOfStrings(dossier.legacy);
+  const significance = getArrayOfStrings(dossier.historical_significance);
+  const debate = getArrayOfStrings(dossier.historical_debate);
+  const actorGroups = [
+    ...getArrayOfObjects(majorActors?.macedonian),
+    ...getArrayOfObjects(majorActors?.persian),
+    ...getArrayOfObjects(majorActors?.other),
+  ];
+
+  return {
+    query_type: getStringField(dossier.query_type) || getStringField(parsed.query_type),
+    title:
+      getStringField(dossier.title) ||
+      getStringField(subject?.known_as) ||
+      getStringField(subject?.name) ||
+      getStringField(parsed.title),
+    subtitle:
+      getStringField(dossier.subtitle) ||
+      getStringField(subject?.title) ||
+      getStringField(parsed.subtitle),
+    summary:
+      getStringField(dossier.summary) ||
+      getStringField(dossier.overview) ||
+      getStringField(parsed.summary),
+    era: getStringField(dossier.era) || getStringField(parsed.era),
+    region: getStringField(dossier.region) || getStringField(parsed.region),
+    key_points:
+      getArrayOfStrings(dossier.key_points).length > 0
+        ? getArrayOfStrings(dossier.key_points)
+        : [...causes.slice(0, 2), ...consequences.slice(0, 2), ...legacy.slice(0, 1)],
+    timeline: chronology.length > 0 ? chronology : getArrayOfObjects(parsed.timeline),
+    sections: [
+      { heading: 'Overview', content: getStringField(dossier.overview) },
+      { heading: 'Historical Significance', content: significance.join(' ') },
+      { heading: 'Historical Debate', content: debate.join(' ') },
+      { heading: 'Legacy', content: legacy.join(' ') },
+    ].filter((section) => getStringField(section.content).trim().length > 0),
+    related_entities: actorGroups.map((actor) => ({
+      name: getStringField(actor.name),
+      type: 'person',
+      reason: getStringField(actor.role),
+    })),
+    recommendations:
+      getArrayOfStrings(dossier.recommendations).length > 0
+        ? getArrayOfStrings(dossier.recommendations)
+        : legacy.slice(0, 2),
+    visual_theme: getObjectField(dossier.visual_theme) ?? getObjectField(parsed.visual_theme),
+    confidence: getObjectField(dossier.confidence) ?? getObjectField(parsed.confidence),
+  };
+}
+
 function buildFullContentFromStructuredResponse(parsed: Record<string, unknown>): string {
   const subtitle = getStringField(parsed.subtitle).trim();
   const summary = getStringField(parsed.summary).trim();
@@ -149,7 +219,7 @@ function parseAIResponse(text: string, query: string): HistoryTopic {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+      const parsed = getNormalizedPayload(JSON.parse(jsonMatch[0]) as Record<string, unknown>);
       const queryType = getStringField(parsed.query_type) || undefined;
       const category = mapQueryTypeToCategory(queryType, query);
       const timeline = getArrayOfObjects(parsed.timelineEvents).length
@@ -246,6 +316,107 @@ function parseAIResponse(text: string, query: string): HistoryTopic {
     coverTheme: getCoverThemeForCategory(category),
     volumeNumber: `Vol. ${Math.floor(Math.random() * 20) + 1}`,
   });
+}
+
+function normalizeForMatching(value: string): string {
+  return value
+    .toLocaleLowerCase()
+    .normalize('NFKD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^\p{Letter}\p{Number}\s]/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
+}
+
+function getQueryTokens(query: string): string[] {
+  const source = /[\u0600-\u06FF]/u.test(query)
+    ? query.toLocaleLowerCase()
+    : normalizeForMatching(query);
+  const tokens = source
+    .split(/\s+/u)
+    .map((token) => token.replace(/[^\p{Letter}\p{Number}]/gu, ''))
+    .filter(Boolean);
+
+  return tokens.filter((token) => {
+    if (/[\u0600-\u06FF]/u.test(token)) {
+      return token.length >= 2;
+    }
+
+    return token.length >= 3;
+  });
+}
+
+function categoriesLookCompatible(query: string, resultCategory: TopicCategory): boolean {
+  const expected = inferCategory(query);
+  if (expected === resultCategory) {
+    return true;
+  }
+
+  if ((expected === 'empire' && resultCategory === 'kingdom') || (expected === 'kingdom' && resultCategory === 'empire')) {
+    return true;
+  }
+
+  if (expected === 'event' && resultCategory === 'war') {
+    return true;
+  }
+
+  return false;
+}
+
+function seemsStrictMatch(query: string, topic: HistoryTopic): boolean {
+  const tokens = getQueryTokens(query);
+  const title = normalizeForMatching(topic.title);
+  const namesHaystack = normalizeForMatching(
+    [topic.title, topic.keyFigures.map((figure) => figure.name).join(' ')]
+      .filter(Boolean)
+      .join(' ')
+  );
+  const haystack = normalizeForMatching(
+    [
+      topic.title,
+      topic.summary,
+      topic.fullContent,
+      topic.keyFigures.map((figure) => figure.name).join(' '),
+      topic.relatedTopics.map((entity) => entity.name).join(' '),
+    ]
+      .filter(Boolean)
+      .join(' ')
+  );
+
+  if (tokens.length === 0) {
+    return true;
+  }
+
+  if (tokens.some((token) => title.includes(token))) {
+    return true;
+  }
+
+  const matchedCount = tokens.filter((token) => haystack.includes(token)).length;
+  const expectedCategory = inferCategory(query);
+
+  if (expectedCategory === 'figure' && tokens.length >= 2) {
+    const nameMatches = tokens.filter((token) => namesHaystack.includes(token)).length;
+    return nameMatches >= 1 || matchedCount >= Math.max(2, tokens.length);
+  }
+
+  if (tokens.length >= 2 && matchedCount >= Math.ceil(tokens.length / 2)) {
+    return true;
+  }
+
+  return matchedCount > 0 && categoriesLookCompatible(query, topic.category);
+}
+
+function buildCorrectivePrompt(query: string, previousContent: string): string {
+  return [
+    `The previous answer did not stay on the exact requested subject: "${query}".`,
+    'Return ONLY valid JSON for the exact requested subject.',
+    'Do not switch to another person, war, empire, kingdom, or event.',
+    'If the query is a historical figure, the returned title must explicitly name that figure.',
+    'If the user wrote in Arabic or French, answer in that language.',
+    '',
+    'Previous incorrect answer:',
+    previousContent.slice(0, 2400),
+  ].join('\n');
 }
 
 const AI_PROMPT = `You are the historical intelligence engine behind Chronolivre, a premium AI-powered history platform.
@@ -557,8 +728,17 @@ export async function searchHistoryTopic(
 
     const data = await response.json();
     if (data.topic) {
-      return data.topic;
+      if (data.relevanceChecked === false || seemsStrictMatch(query, data.topic)) {
+        return data.topic;
+      }
+
+      throw new Error('The archive AI returned a result for a different subject.');
     }
+
+    if (data.error) {
+      throw new Error(String(data.error));
+    }
+
     throw new Error('No topic in response');
   } catch (error) {
     if (error instanceof SearchAccessError) {
@@ -577,4 +757,8 @@ export function getTopicBySlug(slug: string): HistoryTopic | null {
   return match ? sanitizeTopic(match) : null;
 }
 
-export { AI_PROMPT, getLocaleInstruction, parseAIResponse };
+function isTopicRelevantToQuery(query: string, topic: HistoryTopic): boolean {
+  return seemsStrictMatch(query, topic);
+}
+
+export { AI_PROMPT, buildCorrectivePrompt, getLocaleInstruction, isTopicRelevantToQuery, parseAIResponse };
