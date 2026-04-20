@@ -561,7 +561,8 @@ img {
 
 .social-card {
   position: relative;
-  width: min(100%, 212px);
+  width: 212px;
+  min-width: 212px;
   height: 212px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -595,9 +596,9 @@ img {
 
 .social-card__halo {
   position: absolute;
-  inset: 34px 52px auto 52px;
-  height: 64px;
-  border-radius: 999px;
+  inset: 18px 18px auto 18px;
+  height: 82px;
+  border-radius: 24px;
   background:
     radial-gradient(circle at 50% 50%, rgba(217, 193, 150, 0.18), transparent 72%),
     radial-gradient(circle at 56% 52%, rgba(173, 200, 213, 0.14), transparent 78%);
@@ -608,7 +609,7 @@ img {
 
 .social-card__logo {
   position: absolute;
-  top: 26px;
+  top: 24px;
   left: 0;
   right: 0;
   z-index: 4;
@@ -622,47 +623,19 @@ img {
   pointer-events: none;
 }
 
-.social-card__arch {
+.social-card__grid {
   position: absolute;
-  top: 66px;
-  left: 48px;
-  width: 76px;
-  height: 132px;
-  border-radius: 38px 38px 22px 22px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 24%),
-    linear-gradient(180deg, rgba(20, 23, 26, 0.74), rgba(15, 14, 15, 0.94));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 20px 30px rgba(0, 0, 0, 0.2);
-}
-
-.social-card__arch::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    linear-gradient(180deg, rgba(217, 193, 150, 0.08), transparent 36%),
-    radial-gradient(circle at 70% 14%, rgba(173, 200, 213, 0.12), transparent 30%);
-  opacity: 0.8;
-}
-
-.social-card__column {
-  position: absolute;
-  left: 18px;
-  bottom: 18px;
+  inset: 68px 18px 18px;
   z-index: 5;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
 .social-card__icon {
   display: inline-block;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .social-card__svg {
@@ -677,8 +650,8 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 100%;
+  min-height: 54px;
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 42%),
     linear-gradient(180deg, rgba(38, 36, 37, 0.86), rgba(17, 17, 18, 0.92));
@@ -692,7 +665,7 @@ img {
 }
 
 .social-card__button:hover {
-  transform: translateX(3px);
+  transform: translateY(-2px);
   border-color: rgba(217, 193, 150, 0.32);
 }
 
@@ -706,6 +679,41 @@ img {
   inset: 0;
   border-radius: 14px;
   opacity: 0.75;
+}
+
+.social-card__tile {
+  position: relative;
+  overflow: hidden;
+  min-height: 54px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(217, 193, 150, 0.08), transparent 48%),
+    linear-gradient(180deg, rgba(26, 26, 28, 0.82), rgba(15, 15, 16, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 20px rgba(0, 0, 0, 0.2);
+}
+
+.social-card__tile-ring {
+  position: absolute;
+  inset: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 193, 150, 0.18);
+  opacity: 0.8;
+}
+
+.social-card__tile-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  background: rgba(217, 193, 150, 0.7);
+  box-shadow: 0 0 18px rgba(217, 193, 150, 0.45);
 }
 
 .social-card__button--instagram .social-card__button-glow {
@@ -821,8 +829,19 @@ img {
 
 @media (max-width: 768px) {
   .social-card {
-    width: min(100%, 196px);
+    width: 196px;
+    min-width: 196px;
     height: 196px;
+  }
+
+  .social-card__grid {
+    inset: 64px 14px 14px;
+    gap: 8px;
+  }
+
+  .social-card__button,
+  .social-card__tile {
+    min-height: 48px;
   }
 }
 

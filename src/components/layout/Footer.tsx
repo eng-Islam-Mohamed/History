@@ -87,8 +87,7 @@ export default function Footer() {
                 <div className="social-card__background" />
                 <div className="social-card__halo" />
                 <div className="social-card__logo">{copy.footer.socials}</div>
-                <div className="social-card__arch" />
-                <div className="social-card__column">
+                <div className="social-card__grid">
                   <a
                     href="https://www.instagram.com/isla4a4m____/"
                     target="_blank"
@@ -107,6 +106,14 @@ export default function Footer() {
                       </svg>
                     </span>
                   </a>
+
+                  <div
+                    aria-hidden="true"
+                    className="social-card__tile social-card__tile--ornament"
+                  >
+                    <span className="social-card__tile-ring" />
+                    <span className="social-card__tile-dot" />
+                  </div>
 
                   <a
                     href="https://github.com/eng-Islam-Mohamed"
