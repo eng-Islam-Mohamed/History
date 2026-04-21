@@ -35,19 +35,20 @@ function normalizeApiBaseUrl(value: string | undefined): string {
 }
 
 function resolveAiConfig() {
-  const apiKey =
-    process.env.AI_API_KEY ||
-    process.env.DEEPSEEK_API_KEY ||
-    process.env.OPENAI_API_KEY ||
-    '';
   const apiUrl = normalizeApiBaseUrl(
     process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL || process.env.DEEPSEEK_API_URL
   );
+  const isOpenAIUrl = /api\.openai\.com/i.test(apiUrl);
+  const apiKey = isOpenAIUrl
+    ? process.env.OPENAI_API_KEY || process.env.AI_API_KEY || ''
+    : process.env.AI_API_KEY || process.env.DEEPSEEK_API_KEY || '';
 
   if (!apiKey) {
     throw new AiProviderError(
       'missing_config',
-      'AI search is not configured on the server. Add AI_API_KEY or DEEPSEEK_API_KEY and restart the app.'
+      isOpenAIUrl
+        ? 'AI search is not configured on the server. Add OPENAI_API_KEY or AI_API_KEY and restart the app.'
+        : 'AI search is not configured on the server. Add AI_API_KEY or DEEPSEEK_API_KEY and restart the app.'
     );
   }
 
@@ -108,7 +109,9 @@ export async function requestAiCompletion({
           'upstream_error',
           retryable
             ? 'The archive AI is temporarily unavailable. Please try again in a moment.'
-            : 'The archive AI rejected this search request.',
+            : response.status === 401 || response.status === 403
+              ? 'The configured AI provider key was rejected. Check the Vercel AI_API_KEY or DEEPSEEK_API_KEY for production.'
+              : 'The archive AI rejected this search request.',
           { status: response.status, details }
         );
 
