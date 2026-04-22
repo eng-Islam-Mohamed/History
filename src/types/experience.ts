@@ -135,10 +135,24 @@ export interface AskEraResponse {
   caution: string;
 }
 
+export type HistoricalMapCategory = TopicCategory | 'route' | 'conflict';
+
+export interface HistoricalMapHotspotFact {
+  label: string;
+  value: string;
+}
+
+export interface HistoricalMapEraPreset {
+  id: string;
+  year: number;
+  label: string;
+  description: string;
+}
+
 export interface HistoricalMapHotspot {
   id: string;
   title: string;
-  category: TopicCategory | 'route' | 'conflict';
+  category: HistoricalMapCategory;
   query: string;
   region: string;
   startYear: number;
@@ -147,6 +161,10 @@ export interface HistoricalMapHotspot {
   y: number;
   radius: number;
   summary: string;
+  facts: HistoricalMapHotspotFact[];
+  significance: string[];
+  presentDay: string[];
+  relatedQueries: string[];
   confidence: ConfidenceMetadata;
 }
 

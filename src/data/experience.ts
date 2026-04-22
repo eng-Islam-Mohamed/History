@@ -1,6 +1,7 @@
 import {
   ConfidenceMetadata,
   DeepDivePath,
+  HistoricalMapEraPreset,
   HistoricalMapHotspot,
 } from '@/types/experience';
 
@@ -15,6 +16,13 @@ const approximateConfidence: ConfidenceMetadata = {
   label: 'Approximate',
   note:
     'Boundaries, chronology, or territorial influence here should be read as interpretive rather than exact.',
+};
+
+const debatedConfidence: ConfidenceMetadata = {
+  level: 'debated',
+  label: 'Debated',
+  note:
+    'Scholars broadly agree on the importance of this zone, but details of scale, chronology, or reach remain contested.',
 };
 
 export const deepDivePaths: DeepDivePath[] = [
@@ -200,7 +208,112 @@ export const deepDivePaths: DeepDivePath[] = [
   },
 ];
 
+export const historicalMapEraPresets: HistoricalMapEraPreset[] = [
+  {
+    id: 'bronze-age',
+    year: -1250,
+    label: 'Late Bronze Age',
+    description: 'Imperial courts, caravan exchange, and river civilizations before the eastern Mediterranean collapse.',
+  },
+  {
+    id: 'classical-mediterranean',
+    year: -200,
+    label: 'Classical Mediterranean',
+    description: 'Republics, kingdoms, and maritime rivalry reshape the Mediterranean basin.',
+  },
+  {
+    id: 'late-antiquity',
+    year: 400,
+    label: 'Late Antiquity',
+    description: 'Roman transition, Christianization, and the reorganization of imperial authority.',
+  },
+  {
+    id: 'islamic-cosmopolis',
+    year: 900,
+    label: 'Islamic Cosmopolis',
+    description: 'Baghdad, caravan corridors, and connected scholarly worlds from Iberia to Central Asia.',
+  },
+  {
+    id: 'mongol-moment',
+    year: 1275,
+    label: 'Mongol Moment',
+    description: 'A continental empire compresses distance across Eurasia and reshapes political geography.',
+  },
+  {
+    id: 'gunpowder-empires',
+    year: 1550,
+    label: 'Gunpowder Empires',
+    description: 'Ottoman, Safavid, Mughal, and maritime powers compete across connected theaters.',
+  },
+  {
+    id: 'industrial-empires',
+    year: 1880,
+    label: 'Industrial Empires',
+    description: 'Rail, steam, colonial rule, and industrial extraction reorganize land and sea routes.',
+  },
+  {
+    id: 'world-war-age',
+    year: 1916,
+    label: 'World War Age',
+    description: 'Industrial war, imperial collapse, and new state projects redraw global power.',
+  },
+];
+
 export const historicalMapHotspots: HistoricalMapHotspot[] = [
+  {
+    id: 'egypt-nile',
+    title: 'Ancient Nile civilization',
+    category: 'civilization',
+    query: 'Ancient Egypt',
+    region: 'North Africa',
+    startYear: -3100,
+    endYear: -30,
+    x: 58,
+    y: 43,
+    radius: 20,
+    summary:
+      'A river-state whose irrigation cycles, monumental kingship, and scribal bureaucracy anchored one of the longest-lived civilizations in world history.',
+    facts: [
+      { label: 'Core zone', value: 'Upper and Lower Nile valley' },
+      { label: 'Political form', value: 'Dynastic kingship under pharaonic rule' },
+      { label: 'Historic weight', value: 'More than three millennia of state continuity' },
+    ],
+    significance: [
+      'Tied political legitimacy to sacred kingship and control of agricultural abundance.',
+      'Built administrative and architectural systems that became shorthand for ancient state power.',
+      'Linked North Africa to Levantine, Nubian, and Mediterranean exchange worlds.',
+    ],
+    presentDay: ['Egypt', 'Sudan', 'Eastern Mediterranean'],
+    relatedQueries: ['New Kingdom of Egypt', 'Ptolemaic Egypt', 'Ancient Egypt religion'],
+    confidence: acceptedConfidence,
+  },
+  {
+    id: 'carthage',
+    title: 'Carthaginian maritime sphere',
+    category: 'civilization',
+    query: 'Carthage',
+    region: 'Western Mediterranean',
+    startYear: -814,
+    endYear: -146,
+    x: 46,
+    y: 35,
+    radius: 17,
+    summary:
+      'Carthage fused maritime commerce, colonial outposts, and naval strength into a Punic power that rivaled Rome across the western Mediterranean.',
+    facts: [
+      { label: 'Anchor city', value: 'Carthage near present-day Tunis' },
+      { label: 'Strategic focus', value: 'Trade routes, fleets, and island chokepoints' },
+      { label: 'Major rupture', value: 'Destruction after the Third Punic War in 146 BCE' },
+    ],
+    significance: [
+      'Demonstrates how commercial networks could sustain imperial competition without a fully land-based empire.',
+      'Helped turn Sicily, Iberia, and North Africa into linked strategic theaters.',
+      'Its rivalry with Rome shaped classical military and political history.',
+    ],
+    presentDay: ['Tunisia', 'Sicily', 'Spain', 'Western Mediterranean'],
+    relatedQueries: ['Punic Wars', 'Hannibal Barca', 'Phoenician expansion'],
+    confidence: acceptedConfidence,
+  },
   {
     id: 'rome-peak',
     title: 'Roman imperial core',
@@ -213,8 +326,74 @@ export const historicalMapHotspots: HistoricalMapHotspot[] = [
     y: 33,
     radius: 30,
     summary:
-      'A Mediterranean imperial system anchored by roads, law, taxation, and military logistics.',
+      'A Mediterranean imperial system held together by military logistics, tax extraction, roads, law, and urban administration.',
+    facts: [
+      { label: 'Administrative heart', value: 'Italy and the wider Mediterranean basin' },
+      { label: 'Signature system', value: 'Roads, legions, provincial governance, taxation' },
+      { label: 'Key transition', value: 'Western imperial authority fractures in the 5th century CE' },
+    ],
+    significance: [
+      'Turned the Mediterranean into a politically integrated imperial lake for centuries.',
+      'Left legal, urban, linguistic, and administrative legacies far beyond its collapse.',
+      'Created the political geography later empires would claim, imitate, or contest.',
+    ],
+    presentDay: ['Italy', 'France', 'Spain', 'Balkans', 'North Africa', 'Levant'],
+    relatedQueries: ['Augustus', 'Byzantine Empire', 'Fall of the Western Roman Empire'],
     confidence: acceptedConfidence,
+  },
+  {
+    id: 'silk-roads',
+    title: 'Silk Roads exchange belt',
+    category: 'route',
+    query: 'Silk Road',
+    region: 'Central Asia / Eurasia',
+    startYear: -200,
+    endYear: 1500,
+    x: 69,
+    y: 25,
+    radius: 22,
+    summary:
+      'A shifting network of caravan cities, imperial corridors, and cultural transmission linking East Asia, Central Asia, the Middle East, and Europe.',
+    facts: [
+      { label: 'Form', value: 'Interlocking land routes rather than one single road' },
+      { label: 'Main goods', value: 'Silk, horses, paper, spices, metalwork, texts' },
+      { label: 'Historical role', value: 'Trade, diplomacy, religion, disease transmission' },
+    ],
+    significance: [
+      'Made empires in China, Central Asia, Persia, and the Mediterranean part of a wider exchange system.',
+      'Helped spread technologies, religions, artistic forms, and epidemic shocks across Eurasia.',
+      'Its intensity rose and fell with the security provided by states and steppe empires.',
+    ],
+    presentDay: ['China', 'Central Asia', 'Iran', 'Levant', 'Black Sea'],
+    relatedQueries: ['Mongol Empire', 'Tang dynasty', 'Samarkand'],
+    confidence: approximateConfidence,
+  },
+  {
+    id: 'aksum-red-sea',
+    title: 'Aksumite Red Sea corridor',
+    category: 'kingdom',
+    query: 'Kingdom of Aksum',
+    region: 'Horn of Africa / Red Sea',
+    startYear: 100,
+    endYear: 940,
+    x: 61,
+    y: 49,
+    radius: 16,
+    summary:
+      'Aksum linked inland African power, Red Sea shipping, and early Christian state formation between Arabia and Northeast Africa.',
+    facts: [
+      { label: 'Core region', value: 'Northern Ethiopia and Eritrea' },
+      { label: 'Strategic edge', value: 'Red Sea commerce and inland agrarian power' },
+      { label: 'Religious milestone', value: 'Early adoption of Christianity as a state faith' },
+    ],
+    significance: [
+      'Shows that Northeast Africa was central to late antique trade rather than peripheral to it.',
+      'Connected African inland production to maritime exchange with Arabia and beyond.',
+      'Remains a key reference point in Ethiopian state memory and Christian history.',
+    ],
+    presentDay: ['Ethiopia', 'Eritrea', 'Red Sea'],
+    relatedQueries: ['King Ezana', 'Red Sea trade', 'Early Christianity in Africa'],
+    confidence: debatedConfidence,
   },
   {
     id: 'abbasid-baghdad',
@@ -228,22 +407,19 @@ export const historicalMapHotspots: HistoricalMapHotspot[] = [
     y: 34,
     radius: 24,
     summary:
-      "Baghdad's intellectual and commercial gravity made it one of the great centers of the medieval world.",
-    confidence: acceptedConfidence,
-  },
-  {
-    id: 'ottoman-zones',
-    title: 'Ottoman imperial span',
-    category: 'empire',
-    query: 'Ottoman Empire',
-    region: 'Europe / Middle East / North Africa',
-    startYear: 1299,
-    endYear: 1922,
-    x: 57,
-    y: 31,
-    radius: 28,
-    summary:
-      'An imperial bridge across continents whose influence reconfigured regional politics for centuries.',
+      'Baghdad’s court, markets, translators, jurists, and merchants made Abbasid Mesopotamia one of the intellectual and commercial centers of the medieval world.',
+    facts: [
+      { label: 'Capital magnet', value: 'Baghdad as imperial and scholarly center' },
+      { label: 'Political pattern', value: 'Caliphal rule with delegated provincial authority' },
+      { label: 'Turning point', value: 'Mongol capture of Baghdad in 1258' },
+    ],
+    significance: [
+      'Anchored a cosmopolitan zone where administration, law, trade, and scholarship reinforced one another.',
+      'Helped circulate Greek, Persian, Indian, and Arabic intellectual traditions across connected societies.',
+      'Its memory still shapes how the medieval Islamic world is imagined globally.',
+    ],
+    presentDay: ['Iraq', 'Iran', 'Syria', 'Eastern Mediterranean'],
+    relatedQueries: ['Baghdad House of Wisdom', 'Harun al-Rashid', 'Islamic Golden Age'],
     confidence: acceptedConfidence,
   },
   {
@@ -258,8 +434,155 @@ export const historicalMapHotspots: HistoricalMapHotspot[] = [
     y: 46,
     radius: 22,
     summary:
-      'Caravan networks linked Mediterranean markets to West African polities through salt, gold, and scholarship.',
+      'Caravan corridors stitched the Maghreb to Sahelian states through salt, gold, enslaved labor, manuscript culture, and religious travel.',
+    facts: [
+      { label: 'Main axis', value: 'Maghreb to Timbuktu, Gao, and Sahelian markets' },
+      { label: 'Transport', value: 'Camel caravans crossing desert corridors' },
+      { label: 'Exchange', value: 'Gold, salt, textiles, books, enslaved people' },
+    ],
+    significance: [
+      'Made the Sahara a connective zone rather than an empty barrier.',
+      'Supported state growth in West Africa and urban-commercial culture in Sahelian centers.',
+      'Bound North Africa to West African political and scholarly life over the long term.',
+    ],
+    presentDay: ['Morocco', 'Algeria', 'Mali', 'Niger', 'Mauritania'],
+    relatedQueries: ['Mali Empire', 'Timbuktu', 'Mansa Musa'],
     confidence: approximateConfidence,
+  },
+  {
+    id: 'mongol-empire',
+    title: 'Mongol imperial reach',
+    category: 'empire',
+    query: 'Mongol Empire',
+    region: 'Eurasian steppe',
+    startYear: 1206,
+    endYear: 1368,
+    x: 71,
+    y: 21,
+    radius: 25,
+    summary:
+      'A steppe empire built through mobility, cavalry warfare, and delegated rule compressed Eurasian distance on a continental scale.',
+    facts: [
+      { label: 'Expansion mode', value: 'Fast mounted warfare and layered vassal governance' },
+      { label: 'Geographic span', value: 'From East Asia to Eastern Europe and the Middle East' },
+      { label: 'Long effect', value: 'Security and violence both intensified across Eurasian routes' },
+    ],
+    significance: [
+      'Reshaped diplomacy, trade, and military fear from China to the Mediterranean.',
+      'Accelerated long-distance contact among worlds that were often studied separately.',
+      'Its successor khanates reorganized state formation across Eurasia.',
+    ],
+    presentDay: ['Mongolia', 'China', 'Central Asia', 'Russia', 'Iran'],
+    relatedQueries: ['Genghis Khan', 'Ilkhanate', 'Yuan dynasty'],
+    confidence: debatedConfidence,
+  },
+  {
+    id: 'ottoman-zones',
+    title: 'Ottoman imperial span',
+    category: 'empire',
+    query: 'Ottoman Empire',
+    region: 'Europe / Middle East / North Africa',
+    startYear: 1299,
+    endYear: 1922,
+    x: 57,
+    y: 31,
+    radius: 28,
+    summary:
+      'An imperial bridge across continents whose military, legal, fiscal, and urban institutions reorganized regional politics for centuries.',
+    facts: [
+      { label: 'Imperial hinge', value: 'Balkans, Anatolia, Arab provinces, North Africa' },
+      { label: 'Administrative logic', value: 'Dynastic sovereignty with provincial and fiscal layering' },
+      { label: 'Historic break', value: 'Dissolution after World War I and republican transition' },
+    ],
+    significance: [
+      'Connected multiple linguistic, legal, and religious worlds under one imperial framework.',
+      'Shaped modern state questions across Southeast Europe, the Middle East, and North Africa.',
+      'Its archives remain central to studying early modern governance and reform.',
+    ],
+    presentDay: ['Turkey', 'Balkans', 'Levant', 'Iraq', 'North Africa'],
+    relatedQueries: ['Suleiman the Magnificent', 'Tanzimat', 'Ottoman decline'],
+    confidence: acceptedConfidence,
+  },
+  {
+    id: 'zheng-he-voyages',
+    title: 'Ming Indian Ocean voyages',
+    category: 'route',
+    query: 'Zheng He voyages',
+    region: 'Indian Ocean',
+    startYear: 1405,
+    endYear: 1433,
+    x: 76,
+    y: 45,
+    radius: 17,
+    summary:
+      'State-sponsored expeditions under Zheng He projected Ming prestige across the Indian Ocean through diplomacy, display, and controlled exchange.',
+    facts: [
+      { label: 'Political sponsor', value: 'Early Ming court under the Yongle emperor' },
+      { label: 'Maritime zone', value: 'South China Sea, Indian Ocean, Arabian Sea, East Africa' },
+      { label: 'Purpose', value: 'Prestige, tribute relations, controlled maritime influence' },
+    ],
+    significance: [
+      'Shows East Asian maritime projection at a scale often obscured by later Atlantic narratives.',
+      'Connected port cities from Southeast Asia to East Africa through court-sponsored fleets.',
+      'Highlights how imperial visibility could matter as much as territorial annexation.',
+    ],
+    presentDay: ['China', 'Southeast Asia', 'India', 'Arabian Peninsula', 'East Africa'],
+    relatedQueries: ['Zheng He', 'Ming dynasty', 'Indian Ocean trade'],
+    confidence: debatedConfidence,
+  },
+  {
+    id: 'aztec-alliance',
+    title: 'Aztec Triple Alliance',
+    category: 'empire',
+    query: 'Aztec Empire',
+    region: 'Mesoamerica',
+    startYear: 1428,
+    endYear: 1521,
+    x: 24,
+    y: 38,
+    radius: 18,
+    summary:
+      'A tributary imperial system centered on Tenochtitlan organized military expansion, ritual authority, and urban power in central Mexico.',
+    facts: [
+      { label: 'Political form', value: 'Alliance dominated by Tenochtitlan' },
+      { label: 'Economic base', value: 'Tribute extraction from subject polities' },
+      { label: 'Collapse trigger', value: 'Spanish-indigenous coalition conquest in 1521' },
+    ],
+    significance: [
+      'Shows that large-scale imperial consolidation in the fifteenth century was not limited to Afro-Eurasia.',
+      'Its conquest shaped the colonial history of the Americas and early modern global exchange.',
+      'Its urban and ritual order remains central to Mesoamerican historical memory.',
+    ],
+    presentDay: ['Mexico', 'Central Mexico', 'Mesoamerica'],
+    relatedQueries: ['Tenochtitlan', 'Hernan Cortes', 'Mesoamerican civilizations'],
+    confidence: acceptedConfidence,
+  },
+  {
+    id: 'colonial-algeria',
+    title: 'Colonial Algeria and decolonization',
+    category: 'country',
+    query: 'History of Algeria',
+    region: 'North Africa',
+    startYear: 1830,
+    endYear: 1962,
+    x: 44,
+    y: 34,
+    radius: 19,
+    summary:
+      'French conquest, settler colonial rule, resistance, and the war of independence made Algeria a decisive laboratory of modern empire and decolonization.',
+    facts: [
+      { label: 'Colonial rupture', value: 'French invasion begins in 1830' },
+      { label: 'Political tension', value: 'Settler rule, dispossession, and unequal citizenship' },
+      { label: 'Independence', value: '1962 after a brutal anti-colonial war' },
+    ],
+    significance: [
+      'Links imperial occupation to modern nationalism, revolutionary warfare, and postcolonial state formation.',
+      'Sits at the intersection of Mediterranean, North African, and French political history.',
+      'Remains one of the key cases for studying violence and memory in decolonization.',
+    ],
+    presentDay: ['Algeria', 'France', 'Mediterranean'],
+    relatedQueries: ['French conquest of Algeria', 'Algerian War', 'Abd al-Qadir'],
+    confidence: acceptedConfidence,
   },
   {
     id: 'ww1-europe',
@@ -273,22 +596,19 @@ export const historicalMapHotspots: HistoricalMapHotspot[] = [
     y: 25,
     radius: 20,
     summary:
-      'Dense theaters of trench warfare and alliance politics reshaped Europe and accelerated imperial collapse.',
-    confidence: acceptedConfidence,
-  },
-  {
-    id: 'egypt-nile',
-    title: 'Ancient Nile civilization',
-    category: 'civilization',
-    query: 'Ancient Egypt',
-    region: 'North Africa',
-    startYear: -3100,
-    endYear: -30,
-    x: 58,
-    y: 43,
-    radius: 20,
-    summary:
-      'A river-based state whose agricultural rhythm, monumental building, and sacred kingship endured for millennia.',
+      'Dense theaters of trench warfare, industrial mobilization, and alliance collapse reshaped Europe and accelerated the end of older imperial orders.',
+    facts: [
+      { label: 'Conflict type', value: 'Industrial great-power war with global theaters' },
+      { label: 'Main fronts', value: 'Western Front, Eastern Front, Ottoman theaters' },
+      { label: 'Historic outcome', value: 'Imperial collapse and a volatile postwar order' },
+    ],
+    significance: [
+      'Turned industrial capacity and mass mobilization into central instruments of war.',
+      'Destroyed or destabilized Romanov, Habsburg, Ottoman, and German imperial systems.',
+      'Helped set the political conditions for revolution, mandates, and later global conflict.',
+    ],
+    presentDay: ['France', 'Belgium', 'Germany', 'Poland', 'Middle East'],
+    relatedQueries: ['Western Front', 'Ottoman Empire in World War I', 'Treaty of Versailles'],
     confidence: acceptedConfidence,
   },
 ];
