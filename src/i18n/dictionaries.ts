@@ -162,7 +162,7 @@ const dictionaries = {
         'Trace the turning points of Ancient Egypt',
         'Who shaped the Renaissance in Florence?',
       ],
-      loading: 'Searching...',
+      loading: 'Thinking through your request…',
       error:
         'The archive could not complete this dossier. Please try again.',
       tryAgain: 'Try again',
@@ -407,7 +407,7 @@ const dictionaries = {
         "Retracez les tournants de l'Égypte antique",
         'Qui a façonné la Renaissance à Florence ?',
       ],
-      loading: 'Recherche en cours...',
+      loading: 'Réflexion sur votre demande…',
       error:
         "L'archive n'a pas pu compléter ce dossier. Veuillez réessayer.",
       tryAgain: 'Réessayer',
@@ -647,7 +647,7 @@ const dictionaries = {
         'تتبع المنعطفات الأساسية في مصر القديمة',
         'من الذي شكّل عصر النهضة في فلورنسا؟',
       ],
-      loading: 'جارٍ البحث...',
+      loading: 'الذكاء الاصطناعي يفكّر في طلبك…',
       error: 'لم يتمكن الأرشيف من إكمال هذا الملف. حاول مرة أخرى.',
       tryAgain: 'أعد المحاولة',
       timelineEyebrow: 'الخط الزمني',
