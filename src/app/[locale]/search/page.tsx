@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useEffectEvent, useState } from 'react';
+import { Suspense, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -44,6 +44,81 @@ function SearchContent() {
   const [saveState, setSaveState] = useState<
     'idle' | 'saving' | 'saved' | 'error' | 'signin'
   >('idle');
+  const notificationPermissionRequestedRef = useRef(false);
+
+  async function maybeRequestNotificationPermission() {
+    if (
+      typeof window === 'undefined' ||
+      typeof Notification === 'undefined' ||
+      notificationPermissionRequestedRef.current
+    ) {
+      return;
+    }
+
+    if (Notification.permission !== 'default') {
+      notificationPermissionRequestedRef.current = true;
+      return;
+    }
+
+    notificationPermissionRequestedRef.current = true;
+
+    try {
+      await Notification.requestPermission();
+    } catch (error) {
+      console.warn('Notification permission request failed:', error);
+    }
+  }
+
+  async function notifyResearchReady(topic: HistoryTopic, targetUrl: string) {
+    if (
+      typeof window === 'undefined' ||
+      typeof document === 'undefined' ||
+      typeof Notification === 'undefined' ||
+      Notification.permission !== 'granted' ||
+      !document.hidden
+    ) {
+      return;
+    }
+
+    const notificationTitle =
+      locale === 'fr'
+        ? 'Recherche terminée'
+        : locale === 'ar'
+          ? 'اكتمل البحث'
+          : 'Research complete';
+    const notificationBody =
+      locale === 'fr'
+        ? `Le dossier « ${cleanText(topic.title)} » est prêt à être consulté.`
+        : locale === 'ar'
+          ? `ملف « ${cleanText(topic.title)} » جاهز الآن للقراءة.`
+          : `"${cleanText(topic.title)}" is ready to open.`;
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(notificationTitle, {
+          body: notificationBody,
+          icon: '/icon',
+          badge: '/icon',
+          tag: `research-ready-${topic.id}`,
+          data: { url: targetUrl },
+        });
+        return;
+      }
+
+      const notification = new Notification(notificationTitle, {
+        body: notificationBody,
+        icon: '/icon',
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        window.location.href = targetUrl;
+      };
+    } catch (error) {
+      console.warn('Research-ready notification failed:', error);
+    }
+  }
 
   const buildSearchPath = (value: string) =>
     value.trim()
@@ -67,6 +142,8 @@ function SearchContent() {
   }
 
   async function performSearch(nextQuery: string) {
+    void maybeRequestNotificationPermission();
+
     const gateState = getSearchGateState();
     if (gateState) {
       setSearchGateNext(buildSearchPath(nextQuery));
@@ -88,8 +165,11 @@ function SearchContent() {
 
       if (getTopicBySlug(topic.slug)) {
         setSaveState('saved');
+        const detailHref = `${localizePath(locale, `/topic/${topic.slug}`)}`;
+        void notifyResearchReady(topic, detailHref);
       } else if (!hasSupabase || !isAuthenticated) {
         setSaveState('signin');
+        void notifyResearchReady(topic, buildSearchPath(nextQuery));
       } else {
         setSaveState('saving');
         const { topic: persistedTopic, error: saveError } =
@@ -97,11 +177,15 @@ function SearchContent() {
 
         if (saveError) {
           setSaveState('error');
+          void notifyResearchReady(topic, buildSearchPath(nextQuery));
         } else {
+          const resolvedTopic = persistedTopic ?? topic;
           if (persistedTopic) {
             setResult(persistedTopic);
           }
           setSaveState('saved');
+          const detailHref = `${localizePath(locale, `/topic/${resolvedTopic.slug}`)}?saved=${encodeURIComponent(resolvedTopic.id)}`;
+          void notifyResearchReady(resolvedTopic, detailHref);
         }
       }
     } catch (err) {
@@ -134,6 +218,18 @@ function SearchContent() {
   useEffect(() => {
     handleQueryChange(query);
   }, [query, hasSupabase, isAuthenticated, user?.emailVerified]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return;
+    }
+
+    navigator.serviceWorker
+      .register('/research-ready-sw.js')
+      .catch((error) =>
+        console.warn('Research notification service worker registration failed:', error)
+      );
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

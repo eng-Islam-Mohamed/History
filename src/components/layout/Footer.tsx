@@ -154,7 +154,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col gap-3 border-t border-white/8 pt-6 text-sm text-stone-500 md:flex-row md:items-center md:justify-between">
-          <p>{dictionary.footer.copyright.replace('{year}', String(year))}</p>
+          <div className="space-y-1">
+            <p>{dictionary.footer.copyright.replace('{year}', String(year))}</p>
+            <p>{dictionary.footer.builtBy}</p>
+          </div>
           <p>{dictionary.footer.tagline}</p>
         </div>
       </div>

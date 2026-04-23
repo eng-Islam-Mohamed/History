@@ -41,6 +41,7 @@ const dictionaries = {
       copyright: 'Copyright {year} ChronoLivre. All rights reserved.',
       tagline:
         'Designed for clarity, continuity, and focused historical research.',
+      builtBy: 'Built by: Benaboud Mohamed Islam',
     },
     home: {
       heroEyebrow: 'Professional AI History Research',
@@ -283,6 +284,7 @@ const dictionaries = {
       copyright: 'Copyright {year} ChronoLivre. Tous droits réservés.',
       tagline:
         'Conçu pour la clarté, la continuité et une recherche historique plus précise.',
+      builtBy: 'Built by: Benaboud Mohamed Islam',
     },
     home: {
       heroEyebrow: 'Recherche historique professionnelle par IA',
@@ -526,6 +528,7 @@ const dictionaries = {
       ],
       copyright: 'حقوق النشر {year} ChronoLivre. جميع الحقوق محفوظة.',
       tagline: 'مصمم للوضوح والاستمرارية وبحث تاريخي أكثر تركيزًا.',
+      builtBy: 'Built by: Benaboud Mohamed Islam',
     },
     home: {
       heroEyebrow: 'بحث تاريخي احترافي بالذكاء الاصطناعي',
